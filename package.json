@@ -11,9 +11,11 @@
     "seed": "node --env-file=.env.local scripts/seed.mjs"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.3.0",
     "mongodb": "^7.7.0",
     "next": "16.3.7",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "zod": "^4.6.7"
   }
 }

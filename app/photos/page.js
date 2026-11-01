@@ -47,7 +47,7 @@ export default async function PhotosPage() {
             const date = formatPhotoDate(ph.date);
             const hasText = ph.title || date || ph.description;
             return (
-              <li key={ph.file} className="tile photo-card">
+              <li key={ph.id} className="tile photo-card">
                 <a className="photo-frame" href={ph.src} target="_blank" rel="noreferrer" aria-label={`Open ${ph.alt} full size`}>
                   <Image
                     src={ph.src}
