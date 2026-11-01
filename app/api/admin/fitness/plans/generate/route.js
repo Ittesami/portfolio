@@ -8,7 +8,8 @@ import { addDays, exerciseHistory, getFitnessProfile, isDate, listExercises, wee
 export const maxDuration = 300;
 
 // POST { week: "YYYY-MM-DD" (any day in the week), today: "YYYY-MM-DD" }
-// Reviews the last 4 weeks of workouts and writes the plan for that week.
+// Reviews the last 4 weeks of workouts, last week's food log and the last 2 weeks of
+// sleep, then writes the plan for that week.
 // Replaces any existing plan for the week.
 export async function POST(request) {
   if (!isAdmin(request)) return unauthorised();
@@ -19,13 +20,15 @@ export async function POST(request) {
 
   const db = await requireDb();
   const since = addDays(weekStart, -28);
-  const [profile, exercises, workouts, allTime, previousPlan, bodyweights] = await Promise.all([
+  const [profile, exercises, workouts, allTime, previousPlan, bodyweights, meals, sleep] = await Promise.all([
     getFitnessProfile(db),
     listExercises(db),
     db.collection("workouts").find({ date: { $gte: since, $lt: weekStart } }).sort({ date: 1 }).toArray(),
     db.collection("workouts").find({ date: { $lt: weekStart } }).project({ date: 1, entries: 1 }).toArray(),
     db.collection("fitnessPlans").findOne({ _id: addDays(weekStart, -7) }),
     db.collection("bodyweights").find({}).sort({ _id: -1 }).limit(8).toArray(),
+    db.collection("meals").find({ date: { $gte: addDays(weekStart, -7), $lt: weekStart } }).sort({ date: 1, time: 1 }).toArray(),
+    db.collection("sleep").find({ _id: { $gte: addDays(weekStart, -14), $lt: weekStart } }).sort({ _id: 1 }).toArray(),
   ]);
 
   let plan;
@@ -39,6 +42,8 @@ export async function POST(request) {
       history: exerciseHistory(allTime),
       previousPlan,
       bodyweights: bodyweights.map((b) => ({ date: b._id, kg: b.kg })),
+      meals,
+      sleep,
     });
   } catch (err) {
     if (err instanceof CoachError) return NextResponse.json({ error: err.message }, { status: 502 });

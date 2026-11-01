@@ -7,11 +7,11 @@
 //   settings - admin settings: _id "prayer" (prayer location/method), _id "fitness" (fitness profile)
 //   albums   - travel albums (photos join one through photos.albumId)
 //   exercises, workouts, bodyweights, fitnessPlans - fitness tracker (built-in exercises added if missing)
+//   meals, sleep - food and sleep logs
 // Usage: put the real password in .env.local, then `npm run seed`. Safe to re-run.
 import { MongoClient } from "mongodb";
 import { profile } from "../lib/profile-data.js";
 import { EXERCISES } from "../lib/exercise-library.js";
-import { EXERCISE_VIDEOS } from "../lib/exercise-videos.js";
 
 const uri = process.env.MONGODB_URI;
 if (!uri || uri.includes("<")) {
@@ -25,7 +25,7 @@ try {
   const db = client.db(process.env.MONGODB_DB || "portfolio");
 
   const existing = new Set((await db.listCollections({}, { nameOnly: true }).toArray()).map((c) => c.name));
-  for (const name of ["profile", "messages", "photos", "todos", "prayers", "settings", "exercises", "workouts", "bodyweights", "fitnessPlans", "albums"]) {
+  for (const name of ["profile", "messages", "photos", "todos", "prayers", "settings", "exercises", "workouts", "bodyweights", "fitnessPlans", "albums", "meals", "sleep"]) {
     if (!existing.has(name)) await db.createCollection(name);
   }
 
@@ -33,16 +33,11 @@ try {
   await db.collection("messages").createIndex({ createdAt: -1 });
   await db.collection("todos").createIndex({ done: 1, dueDate: 1 });
   await db.collection("workouts").createIndex({ date: -1 });
+  await db.collection("meals").createIndex({ date: 1, time: 1 });
   // ensureExerciseLibrary: adds built-in exercises that are missing, never overwrites yours
   await db.collection("exercises").bulkWrite(
     EXERCISES.map((e) => ({
       updateOne: { filter: { _id: e._id }, update: { $setOnInsert: { ...e, createdAt: new Date() } }, upsert: true },
-    })),
-  );
-  // Form-tutorial videos: only where you haven't set one yourself
-  await db.collection("exercises").bulkWrite(
-    Object.entries(EXERCISE_VIDEOS).map(([id, video]) => ({
-      updateOne: { filter: { _id: id, video: { $exists: false } }, update: { $set: { video } } },
     })),
   );
 
