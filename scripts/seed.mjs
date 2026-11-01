@@ -11,6 +11,7 @@
 import { MongoClient } from "mongodb";
 import { profile } from "../lib/profile-data.js";
 import { EXERCISES } from "../lib/exercise-library.js";
+import { EXERCISE_VIDEOS } from "../lib/exercise-videos.js";
 
 const uri = process.env.MONGODB_URI;
 if (!uri || uri.includes("<")) {
@@ -36,6 +37,12 @@ try {
   await db.collection("exercises").bulkWrite(
     EXERCISES.map((e) => ({
       updateOne: { filter: { _id: e._id }, update: { $setOnInsert: { ...e, createdAt: new Date() } }, upsert: true },
+    })),
+  );
+  // Form-tutorial videos: only where you haven't set one yourself
+  await db.collection("exercises").bulkWrite(
+    Object.entries(EXERCISE_VIDEOS).map(([id, video]) => ({
+      updateOne: { filter: { _id: id, video: { $exists: false } }, update: { $set: { video } } },
     })),
   );
 

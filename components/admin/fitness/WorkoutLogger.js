@@ -4,6 +4,7 @@ import { useState } from "react";
 import { api } from "../api";
 import Spinner from "../Spinner";
 import ExercisePicker from "./ExercisePicker";
+import ExerciseVideo from "./ExerciseVideo";
 
 const emptySet = (type, prev) =>
   type === "timed"
@@ -56,7 +57,8 @@ export function planDayToDraft(day, library) {
   };
 }
 
-export default function WorkoutLogger({ draft, setDraft, library, onLibraryChange, onSaved, onCancel }) {
+export default function WorkoutLogger({ draft, setDraft, library, onLibraryChange, onVideoChange, onSaved, onCancel }) {
+  const exercisesById = new Map(library.exercises.map((e) => [e.id, e]));
   const [picking, setPicking] = useState(draft.entries.length === 0);
   const [state, setState] = useState({ busy: false, error: "" });
 
@@ -141,6 +143,7 @@ export default function WorkoutLogger({ draft, setDraft, library, onLibraryChang
               Remove
             </button>
           </legend>
+          <ExerciseVideo exercise={exercisesById.get(en.exerciseId)} name={en.name} onVideoChange={onVideoChange} />
           <div className={`set-grid ${en.type}`}>
             <span className="set-head">Set</span>
             {en.type === "timed" ? (

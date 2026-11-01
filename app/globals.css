@@ -538,3 +538,20 @@ code{font-family:var(--mono);font-size:.9em;background:var(--chip);border-radius
   /* Album dates: From and To side by side, each able to shrink. */
   .date-pair{grid-template-columns:1fr 1fr!important}
 }
+
+/* ---------- Exercise how-to videos ---------- */
+.howto{margin-top:4px}
+.howto-toggle{font:inherit;font-size:13px;font-weight:600;color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--surface));border:1px solid color-mix(in srgb,var(--accent) 25%,var(--line));border-radius:999px;padding:4px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.howto-toggle span{font-size:10px}
+.howto-panel{margin-top:10px;display:grid;gap:8px}
+.video-frame{position:relative;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000;max-width:560px}
+.video-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.video-poster{position:absolute;inset:0;border:0;padding:0;cursor:pointer;background:#000}
+.video-poster img{width:100%;height:100%;object-fit:cover;display:block;opacity:.9}
+.play-badge{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:58px;height:40px;border-radius:12px;background:#E1251B;color:#fff;display:grid;place-items:center;font-size:16px;box-shadow:0 2px 10px rgba(0,0,0,.35)}
+.video-poster:hover .play-badge{background:#C81E15}
+.video-meta{margin:0;max-width:560px}
+.howto-links{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:14px}
+.howto-links a{color:var(--accent);font-weight:600;text-decoration:none}
+.video-form{max-width:560px}
+.plan-exercises .howto{margin-bottom:4px}

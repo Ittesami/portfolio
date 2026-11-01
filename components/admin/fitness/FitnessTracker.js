@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { api, prettyDate, shiftDate, todayStr } from "../api";
 import Spinner from "../Spinner";
 import WorkoutLogger, { planDayToDraft, workoutToDraft } from "./WorkoutLogger";
+import ExerciseVideo from "./ExerciseVideo";
 
 // Remembers which view (plan or progress) you last used, in this browser only.
 const VIEW_KEY = "fitness-view";
@@ -26,7 +27,7 @@ function defaultWeekDay() {
   return new Date(`${t}T12:00:00`).getDay() === 0 ? shiftDate(t, 1) : t;
 }
 
-function PlanDay({ day, done, today, onLog }) {
+function PlanDay({ day, done, today, onLog, exercisesById, onVideoChange }) {
   return (
     <li className={`tile plan-day${day.rest ? " rest" : ""}${day.date === today ? " is-today" : ""}`}>
       <div className="row">
@@ -52,6 +53,7 @@ function PlanDay({ day, done, today, onLog }) {
                 </span>
                 {x.load && <span className="plan-ex-load">{x.load}</span>}
                 {x.notes && <span className="muted small">{x.notes}</span>}
+                <ExerciseVideo exercise={exercisesById.get(x.exerciseId)} name={x.name} onVideoChange={onVideoChange} />
               </li>
             ))}
           </ol>
@@ -69,7 +71,8 @@ function PlanDay({ day, done, today, onLog }) {
   );
 }
 
-function Plan({ data, today, onLog, onGenerate, generating, genError }) {
+function Plan({ data, today, onLog, onGenerate, generating, genError, library, onVideoChange }) {
+  const exercisesById = new Map(library.exercises.map((e) => [e.id, e]));
   const plan = data.plan;
   const loggedDates = new Set(data.weekWorkouts.map((w) => w.date));
   return (
@@ -132,7 +135,15 @@ function Plan({ data, today, onLog, onGenerate, generating, genError }) {
           </div>
           <ul className="plan-days">
             {plan.days.map((d) => (
-              <PlanDay key={d.date} day={d} done={loggedDates.has(d.date)} today={today} onLog={onLog} />
+              <PlanDay
+                key={d.date}
+                day={d}
+                done={loggedDates.has(d.date)}
+                today={today}
+                onLog={onLog}
+                exercisesById={exercisesById}
+                onVideoChange={onVideoChange}
+              />
             ))}
           </ul>
           <div className="plan-tips">
@@ -459,6 +470,8 @@ export default function FitnessTracker() {
   }
 
   const ready = data && library && data.weekStart;
+  const setVideo = (id, video) =>
+    setLibrary((l) => ({ ...l, exercises: l.exercises.map((e) => (e.id === id ? { ...e, video } : e)) }));
 
   return (
     <div className="fitness">
@@ -512,6 +525,8 @@ export default function FitnessTracker() {
           genError={gen.error}
           onGenerate={generate}
           onLog={(day) => openLogger(planDayToDraft(day, library.exercises))}
+          library={library}
+          onVideoChange={setVideo}
         />
       )}
 
@@ -538,6 +553,7 @@ export default function FitnessTracker() {
                   setDraft={setDraft}
                   library={library}
                   onLibraryChange={(exercises) => setLibrary((l) => ({ ...l, exercises }))}
+                  onVideoChange={setVideo}
                   onCancel={() => setDraft(null)}
                   onSaved={() => {
                     setDraft(null);
