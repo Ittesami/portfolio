@@ -16,7 +16,7 @@ export async function GET(request) {
   return NextResponse.json({ photos: await getAllPhotos() });
 }
 
-// POST multipart/form-data: file, plus optional title, date, description.
+// POST multipart/form-data: file, plus optional title, date, description, albumId.
 export async function POST(request) {
   if (!isAdmin(request)) return unauthorised();
   let form;
@@ -35,6 +35,8 @@ export async function POST(request) {
   if (error) return NextResponse.json({ error }, { status: 400 });
 
   const db = await requireDb();
+  if (data.albumId && !(await db.collection("albums").findOne({ _id: data.albumId })))
+    return NextResponse.json({ error: "That album doesn't exist." }, { status: 400 });
   const buffer = Buffer.from(await file.arrayBuffer());
   const stream = photoBucket(db).openUploadStream(file.name || "photo", { metadata: { contentType: file.type } });
   await new Promise((resolve, reject) => {
@@ -53,11 +55,13 @@ export async function POST(request) {
     date: data.date ?? "",
     description: data.description ?? "",
     hidden: false,
+    albumId: data.albumId ?? null,
     createdAt: new Date(),
   };
   await db.collection("photos").insertOne(doc);
 
   revalidatePath("/");
   revalidatePath("/photos");
+  revalidatePath("/travel", "layout");
   return NextResponse.json({ ok: true, id: doc._id }, { status: 201 });
 }

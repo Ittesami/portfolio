@@ -380,7 +380,7 @@ function ProfileForm({ profile, onSaved }) {
           </label>
         </div>
         <label>
-          Notes for Claude <span className="opt">optional</span>
+          <span className="field-label">Notes for Claude <span className="opt">optional</span></span>
           <textarea
             value={form.notes}
             onChange={set("notes")}

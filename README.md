@@ -86,6 +86,21 @@ Private, at `/admin/fitness`.
   `fitnessPlans` (`_id` = the Monday). Refusal fallbacks are enabled (`fallbacks: "default"`).
   Generating a plan takes about a minute and costs a few cents of API usage.
 
+## Travel
+
+Public at `/travel`: a world map, then one album per trip at `/travel/<trip>`.
+
+- **Map**: rendered on the server as a plain SVG from Natural Earth data (`world-atlas`, `d3-geo`;
+  see `lib/world.js`). Countries in `travel.visited` in `lib/profile-data.js` are blue, `travel.home`
+  is amber, and every album's country is added automatically. Countries too small to see (like the
+  Maldives) get a dot. Codes are ISO 3166-1 numeric, e.g. `"826"` = United Kingdom.
+- **Albums**: managed in the admin **Travel** tab. Each trip has a title, country, optional place
+  and dates, and a description (blank lines make paragraphs). Upload photos straight into a trip;
+  give each a sentence-style title, and optionally a description and date. Pick any photo as the
+  album cover (otherwise the first one is used). Stored in the `albums` collection; photos join a
+  trip through `photos.albumId`, and album photos don't appear on the Photography page.
+- Deleting a trip keeps its photos; they move back to the Photos tab.
+
 ## Photos
 
 Two ways to add them:

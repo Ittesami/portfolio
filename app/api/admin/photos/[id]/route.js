@@ -8,9 +8,10 @@ import { parsePhotoDetails } from "@/lib/photo-details";
 function refresh() {
   revalidatePath("/");
   revalidatePath("/photos");
+  revalidatePath("/travel", "layout");
 }
 
-// PATCH { title?, date?, description?, hidden?, avatar? }
+// PATCH { title?, date?, description?, hidden?, avatar?, albumId? }
 export async function PATCH(request, { params }) {
   if (!isAdmin(request)) return unauthorised();
   const id = decodeURIComponent((await params).id);
@@ -22,6 +23,8 @@ export async function PATCH(request, { params }) {
   if (error) return NextResponse.json({ error }, { status: 400 });
 
   const db = await requireDb();
+  if (data.albumId && !(await db.collection("albums").findOne({ _id: data.albumId })))
+    return NextResponse.json({ error: "That album doesn't exist." }, { status: 400 });
   // Only one profile picture at a time.
   if (data.avatar) await db.collection("photos").updateMany({ avatar: true }, { $set: { avatar: false } });
   await db

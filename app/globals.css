@@ -424,3 +424,117 @@ code{font-family:var(--mono);font-size:.9em;background:var(--chip);border-radius
 .view-switch button.on{background:var(--accent);color:var(--accent-ink)}
 .view-switch button:not(.on):hover{color:var(--ink)}
 @media (max-width:620px){.view-switch{max-width:none}}
+
+/* ---------- Detail pages (projects, experience) ---------- */
+.page-head{padding-top:8px;margin-bottom:22px;max-width:70ch}
+.page-lead{font-size:17px;margin:0}
+.block-head.row{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.project-card{gap:8px;color:inherit}
+.project-card h3{font-family:var(--display);font-weight:700;font-size:21px;letter-spacing:-.015em;margin:0;line-height:1.15}
+.project-card .see-all{margin-top:auto;padding-top:6px}
+.project-card.featured{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+.more-tile{justify-content:space-between;color:var(--ink-tile-text)}
+.more-tile .icon{color:var(--ink-tile-text)}
+.big-tile{padding:26px;gap:12px}
+.project-title{font-family:var(--display);font-weight:700;font-size:clamp(24px,3vw,30px);letter-spacing:-.02em;line-height:1.1;margin:0}
+.details-btn{align-self:flex-start;margin-top:auto}
+.back-link{display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--accent);font-weight:600;font-size:15px;margin:4px 0 14px}
+.project-hero{padding:32px;gap:12px}
+.project-hero .page-title{margin:0}
+.project-lead{max-width:70ch;margin:0!important}
+.project-detail .big{font-size:19px;line-height:1.4;font-weight:600}
+.detail-text{font-size:17px;line-height:1.65;max-width:80ch}
+.org-line{color:var(--accent);font-weight:600}
+.role-tile .icon{color:var(--accent)}
+@media (max-width:620px){
+  .big-tile,.project-hero{padding:20px}
+  .project-detail .big{font-size:17px}
+  .detail-text{font-size:16px}
+}
+
+/* ---------- Travel ---------- */
+.map-tile{padding:18px;gap:14px}
+.world-map{width:100%;height:auto;display:block;border-radius:14px;background:color-mix(in srgb,var(--accent) 5%,var(--bg))}
+.world-map .country{fill:var(--ph0);stroke:var(--surface);stroke-width:.6}
+.world-map .country.visited{fill:var(--accent)}
+.world-map .country.home{fill:var(--dot)}
+.world-map .country.visited:hover,.world-map .country.home:hover{opacity:.85}
+.world-map .dot{stroke:var(--surface);stroke-width:1.5}
+.world-map .dot.visited{fill:var(--accent)}
+.world-map .dot.home{fill:var(--dot)}
+.world-map .dot-halo{opacity:.25}
+.world-map .dot-halo.visited{fill:var(--accent)}
+.world-map .dot-halo.home{fill:var(--dot)}
+.map-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.map-count{margin:0;font-size:17px}
+.map-count strong{font-family:var(--display);font-size:28px;letter-spacing:-.02em;margin-right:4px}
+.map-legend{list-style:none;margin:0;padding:0;display:flex;gap:16px;flex-wrap:wrap;font-size:14px;color:var(--muted)}
+.map-legend li{display:inline-flex;align-items:center;gap:6px}
+.swatch{width:14px;height:14px;border-radius:4px;display:inline-block}
+.swatch.visited{background:var(--accent)}
+.swatch.home{background:var(--dot)}
+.album-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.album-card{padding:10px;gap:0;color:inherit;height:100%}
+.album-cover{position:relative;aspect-ratio:4/3;border-radius:14px;overflow:hidden;background:var(--chip)}
+.album-cover img{object-fit:cover;transition:transform .4s}
+.album-card:hover .album-cover img{transform:scale(1.03)}
+.album-cover-empty{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted)}
+.album-text{padding:14px 8px 6px;display:flex;flex-direction:column;gap:6px;flex:1}
+.album-text h3{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:-.015em;margin:0;line-height:1.15}
+.album-excerpt{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin:0}
+.album-text .see-all{margin-top:auto}
+.album-hero{padding:30px;gap:12px;margin-bottom:14px}
+.album-hero .page-title{margin:0}
+.album-story{display:grid;gap:12px;max-width:72ch;font-size:17px;line-height:1.7}
+.album-story p{margin:0}
+.photo-sentence{margin:0;font-size:16px;font-weight:500;line-height:1.45}
+.album-photos .photo-text{gap:6px}
+.travel-tile{color:inherit}
+.travel-tile .row .icon{color:var(--accent)}
+
+/* Travel admin */
+.travel-admin{display:grid;gap:14px}
+.admin-albums{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.admin-album{width:100%;font:inherit;color:inherit;text-align:left;cursor:pointer;display:grid;grid-template-columns:96px minmax(0,1fr);gap:14px;align-items:center;padding:12px}
+.admin-album:hover{border-color:var(--accent)}
+.admin-album-cover{aspect-ratio:1;border-radius:10px;overflow:hidden;background:var(--chip);display:block}
+.admin-album-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.admin-album-text{display:grid;gap:4px}
+.album-editor{display:grid;gap:14px}
+.date-pair{gap:12px}
+.form textarea.tall{min-height:180px}
+.move-album{margin-top:10px;max-width:360px}
+.danger-zone{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+@media (max-width:620px){
+  .map-tile{padding:12px}
+  .album-hero{padding:20px}
+  .album-story{font-size:16px}
+  .album-grid{grid-template-columns:1fr}
+}
+
+/* ---------- Layout fixes ---------- */
+/* Home photo tile: the picture fills the whole tile, not a square inside it. */
+.photo-tile .photos > *{aspect-ratio:auto;width:100%;height:100%}
+
+/* Field labels: keep "optional" on the same line as the label text. */
+.field-label{display:block}
+
+/* Form controls may shrink inside grids instead of pushing into their neighbours. */
+.form .row > *,.todo-form-row > *,.set-grid > *,.picker-controls > *,.inline-form > *{min-width:0}
+.form input,.form select,.form textarea{min-width:0;max-width:100%}
+
+@media (max-width:620px){
+  /* iOS Safari gives date/time inputs a minimum width and its own styling;
+     without this they overflow side-by-side grid cells and overlap. */
+  input[type="date"],input[type="time"]{-webkit-appearance:none;appearance:none;display:block;width:100%;min-width:0;min-height:44px;text-align:left}
+  input[type="date"]::-webkit-date-and-time-value,input[type="time"]::-webkit-date-and-time-value{text-align:left}
+  /* The Plan/Progress switch scrolls with the page on phones instead of covering the fields. */
+  .view-switch{position:static}
+  /* Prayer history: seven day columns fit the screen. */
+  .week-grid{overflow:visible}
+  .week-row{grid-template-columns:52px repeat(7,minmax(0,1fr));gap:2px}
+  .week-name{font-size:12px}
+  .dot{width:12px;height:12px}
+  /* Album dates: From and To side by side, each able to shrink. */
+  .date-pair{grid-template-columns:1fr 1fr!important}
+}

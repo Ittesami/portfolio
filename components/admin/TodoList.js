@@ -77,11 +77,11 @@ function TodoForm({ initial, submitLabel, busyLabel, onSubmit, onCancel, compact
       />
       <div className="todo-form-row">
         <label>
-          Date <span className="opt">optional</span>
+          <span className="field-label">Date <span className="opt">optional</span></span>
           <input type="date" value={form.dueDate} onChange={set("dueDate")} />
         </label>
         <label>
-          Time <span className="opt">optional</span>
+          <span className="field-label">Time <span className="opt">optional</span></span>
           <input type="time" value={form.dueTime} onChange={set("dueTime")} />
         </label>
       </div>

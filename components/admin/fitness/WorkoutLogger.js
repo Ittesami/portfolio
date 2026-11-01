@@ -219,7 +219,7 @@ export default function WorkoutLogger({ draft, setDraft, library, onLibraryChang
       )}
 
       <label>
-        Notes <span className="opt">optional</span>
+        <span className="field-label">Notes <span className="opt">optional</span></span>
         <textarea
           value={draft.notes}
           onChange={(e) => update((d) => ({ ...d, notes: e.target.value }))}

@@ -32,7 +32,7 @@ async function shrink(file) {
   throw new Error(`${file.name} is too large even after shrinking.`);
 }
 
-function Uploader({ onUploaded }) {
+function Uploader({ albumId, onUploaded }) {
   const input = useRef(null);
   const [state, setState] = useState({ busy: false, done: 0, total: 0, errors: [] });
 
@@ -45,6 +45,7 @@ function Uploader({ onUploaded }) {
       try {
         const form = new FormData();
         form.append("file", await shrink(file));
+        if (albumId) form.append("albumId", albumId);
         await api("/api/admin/photos", { method: "POST", form });
       } catch (err) {
         errors.push(err.message);
@@ -58,7 +59,7 @@ function Uploader({ onUploaded }) {
 
   return (
     <div className="tile uploader">
-      <p className="label">Add photos</p>
+      <p className="label">{albumId ? "Add photos to this trip" : "Add photos"}</p>
       <p className="muted">Pick one or more. They're resized for the web and appear on the site straight away.</p>
       <div className="form-foot">
         <button
@@ -94,7 +95,7 @@ function Uploader({ onUploaded }) {
   );
 }
 
-function PhotoRow({ photo, isProfile, onChanged }) {
+function PhotoRow({ photo, isProfile, albums, isCover, onSetCover, onChanged }) {
   const [form, setForm] = useState({ title: photo.title, date: photo.date, description: photo.description });
   const [busy, setBusy] = useState("");
   const [msg, setMsg] = useState({ text: "", error: false });
@@ -138,20 +139,26 @@ function PhotoRow({ photo, isProfile, onChanged }) {
           <span className="badge">{photo.kind === "upload" ? "Uploaded" : "In code folder"}</span>
           {photo.hidden && <span className="badge warn">Hidden</span>}
           {isProfile && <span className="badge accent">Profile picture</span>}
+          {isCover && <span className="badge accent">Album cover</span>}
           {photo.kind === "folder" && <span className="label file-name">{photo.file}</span>}
         </div>
         <div className="row">
           <label>
-            Title <span className="opt">optional</span>
-            <input value={form.title} onChange={set("title")} maxLength={120} placeholder="Sunrise over Pokhara" />
+            <span className="field-label">Title <span className="opt">optional</span></span>
+            <input
+              value={form.title}
+              onChange={set("title")}
+              maxLength={120}
+              placeholder={photo.albumId ? "Watching the sun rise over Phewa Lake." : "Sunrise over Pokhara"}
+            />
           </label>
           <label>
-            Date <span className="opt">optional</span>
+            <span className="field-label">Date <span className="opt">optional</span></span>
             <input type="date" value={form.date} onChange={set("date")} />
           </label>
         </div>
         <label>
-          Description <span className="opt">optional</span>
+          <span className="field-label">Description <span className="opt">optional</span></span>
           <textarea
             value={form.description}
             onChange={set("description")}
@@ -174,7 +181,19 @@ function PhotoRow({ photo, isProfile, onChanged }) {
             {busy === "hide" && <Spinner />}
             {photo.hidden ? "Show on site" : "Hide from site"}
           </button>
-          {!isProfile && (
+          {onSetCover && !isCover && (
+            <button
+              className="btn"
+              type="button"
+              disabled={Boolean(busy)}
+              aria-busy={busy === "cover"}
+              onClick={() => run("cover", () => onSetCover(photo.id))}
+            >
+              {busy === "cover" && <Spinner />}
+              Use as album cover
+            </button>
+          )}
+          {!isProfile && !photo.albumId && (
             <button
               className="btn"
               type="button"
@@ -210,41 +229,71 @@ function PhotoRow({ photo, isProfile, onChanged }) {
             ))}
           {msg.text && <p className={`form-status${msg.error ? " err" : ""}`}>{msg.text}</p>}
         </div>
+        {albums && (
+          <label className="move-album">
+            Album
+            <select
+              value={photo.albumId ?? ""}
+              disabled={Boolean(busy)}
+              onChange={(e) => run("move", () => patch({ albumId: e.target.value || null }))}
+            >
+              <option value="">Not in an album (Photography page)</option>
+              {albums.map((a) => (
+                <option key={a.slug} value={a.slug}>
+                  {a.title}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
       </form>
     </li>
   );
 }
 
-export default function PhotoManager() {
+// albumId: show and upload photos for one travel album; without it, the
+// photos that aren't in any album (the Photography page).
+// albums: list for the "move to album" picker. onChanged: tell the parent
+// (e.g. to refresh album covers and counts).
+export default function PhotoManager({ albumId = null, albums = null, coverPhotoId = null, onSetCover, onChanged }) {
   const [photos, setPhotos] = useState(null);
   const [error, setError] = useState("");
 
   const load = () =>
     api("/api/admin/photos")
-      .then((d) => setPhotos(d.photos))
+      .then((d) => {
+        setPhotos(d.photos.filter((p) => (p.albumId ?? null) === albumId));
+        onChanged?.();
+      })
       .catch((err) => setError(err.message));
 
   useEffect(() => {
+    setPhotos(null);
     load();
-  }, []);
+  }, [albumId]);
+
+  const cover = coverPhotoId ?? photos?.find((p) => !p.hidden)?.id;
 
   return (
     <>
-      <Uploader onUploaded={load} />
+      <Uploader albumId={albumId} onUploaded={load} />
       {error && <p className="form-status err">{error}</p>}
       {photos === null && !error && (
         <div className="inline-loading" role="status" aria-label="Loading photos">
           <span className="spinner" />
         </div>
       )}
-      {photos?.length === 0 && <p className="empty muted">No photos yet. Add some above.</p>}
+      {photos?.length === 0 && <p className="empty muted">No photos {albumId ? "in this trip" : "here"} yet. Add some above.</p>}
       {photos?.length > 0 && (
         <ul className="admin-list">
           {photos.map((ph) => (
             <PhotoRow
-              key={`${ph.id}:${ph.hidden}:${ph.avatar}`}
+              key={`${ph.id}:${ph.hidden}:${ph.avatar}:${ph.albumId}`}
               photo={ph}
-              isProfile={ph.avatar || (!photos.some((x) => x.avatar) && ph.avatarFile)}
+              albums={albums}
+              isProfile={!albumId && (ph.avatar || (!photos.some((x) => x.avatar) && ph.avatarFile))}
+              isCover={Boolean(albumId) && ph.id === cover}
+              onSetCover={albumId ? onSetCover : undefined}
               onChanged={load}
             />
           ))}

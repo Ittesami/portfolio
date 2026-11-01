@@ -5,6 +5,7 @@
 //   todos    - admin to-do list
 //   prayers  - daily prayer log, _id "YYYY-MM-DD"
 //   settings - admin settings: _id "prayer" (prayer location/method), _id "fitness" (fitness profile)
+//   albums   - travel albums (photos join one through photos.albumId)
 //   exercises, workouts, bodyweights, fitnessPlans - fitness tracker (built-in exercises added if missing)
 // Usage: put the real password in .env.local, then `npm run seed`. Safe to re-run.
 import { MongoClient } from "mongodb";
@@ -23,7 +24,7 @@ try {
   const db = client.db(process.env.MONGODB_DB || "portfolio");
 
   const existing = new Set((await db.listCollections({}, { nameOnly: true }).toArray()).map((c) => c.name));
-  for (const name of ["profile", "messages", "photos", "todos", "prayers", "settings", "exercises", "workouts", "bodyweights", "fitnessPlans"]) {
+  for (const name of ["profile", "messages", "photos", "todos", "prayers", "settings", "exercises", "workouts", "bodyweights", "fitnessPlans", "albums"]) {
     if (!existing.has(name)) await db.createCollection(name);
   }
 

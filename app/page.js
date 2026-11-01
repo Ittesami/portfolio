@@ -5,6 +5,8 @@ import Icon from "@/components/Icon";
 import LoadingLink from "@/components/LoadingLink";
 import { getProfile } from "@/lib/profile";
 import { getPhotos } from "@/lib/photos";
+import SiteHeader from "@/components/SiteHeader";
+import SiteFooter from "@/components/SiteFooter";
 
 export const revalidate = 60;
 
@@ -43,28 +45,11 @@ function PhotoGrid({ photos, count, sizes }) {
 export default async function Home() {
   const [p, { avatar, photos }] = await Promise.all([getProfile(), getPhotos()]);
   const featured = p.projects.find((x) => x.featured) ?? p.projects[0];
-  const firstName = p.name.split(" ")[0];
   const links = [...(p.links?.profiles ?? []), { label: "Email", href: `mailto:${p.email}`, icon: "mail" }];
 
   return (
     <div className="wrap">
-      <nav className="nav" aria-label="Main">
-        <a className="mark" href="#top">
-          {firstName}
-          <i />
-        </a>
-        <ul>
-          <li><a href="#projects">Projects</a></li>
-          <li><a href="#experience">Experience</a></li>
-          <li><a href="#life">Off the clock</a></li>
-          <li><a href="#contact">Contact</a></li>
-        </ul>
-        {p.links?.cv && (
-          <a className="btn small" href={p.links.cv} target="_blank" rel="noreferrer">
-            <Icon name="download" size={16} /> CV
-          </a>
-        )}
-      </nav>
+      <SiteHeader profile={p} home />
 
       {/* ---------- Hero bento ---------- */}
       <header id="top" className="bento hero-grid">
@@ -112,14 +97,14 @@ export default async function Home() {
           <p className="muted">Originally from {p.hometown}</p>
         </section>
 
-        <a className="tile accent c2 link-tile" href={`#${featured.slug}`}>
+        <LoadingLink className="tile accent c2 link-tile" href={`/projects/${featured.slug}`}>
           <div className="row">
             <p className="label">Featured project</p>
             <Icon name="arrow" />
           </div>
           <p className="big">{featured.name}</p>
-          <p>{featured.summary}</p>
-        </a>
+          <p>{featured.short ?? featured.summary}</p>
+        </LoadingLink>
 
         <section className="tile ink c1">
           <p className="label">Find me</p>
@@ -154,60 +139,44 @@ export default async function Home() {
         </section>
       </header>
 
-      {/* ---------- Projects ---------- */}
+      {/* ---------- Projects (short tiles; details live on /projects) ---------- */}
       <section id="projects" className="block">
-        <div className="block-head">
-          <p className="kicker">Selected projects</p>
-          <h2>Things I&apos;ve built</h2>
+        <div className="block-head row">
+          <div>
+            <p className="kicker">Selected projects</p>
+            <h2>Things I&apos;ve built</h2>
+          </div>
+          <LoadingLink className="see-all" href="/projects">
+            All projects <Icon name="arrow" size={16} />
+          </LoadingLink>
         </div>
         <div className="bento">
-          {p.projects.map((proj) => (
-            <article id={proj.slug} key={proj.slug} className={`tile project ${proj.featured ? "c4" : "c2"}`}>
-              <div className="row">
-                <h3>{proj.name}</h3>
-                <span className="kind">{proj.kind}</span>
-              </div>
-              <p>{proj.summary}</p>
+          {p.projects.map((proj, i) => (
+            <LoadingLink
+              key={proj.slug}
+              href={`/projects/${proj.slug}`}
+              className={`tile link-tile project-card ${i < 2 ? "c2" : "c1"}${proj.featured ? " featured" : ""}`}
+            >
+              <span className="kind">{proj.kind}</span>
+              <h3>{proj.name}</h3>
+              <p className="muted">{proj.short ?? proj.summary}</p>
               <div className="chips small">
-                {proj.stack.map((s) => (
+                {proj.stack.slice(0, i < 2 ? 4 : 3).map((s) => (
                   <span key={s}>{s}</span>
                 ))}
               </div>
-              {(proj.link || proj.repo) && (
-                <div className="proj-links">
-                  {proj.link && (
-                    <a href={proj.link} target="_blank" rel="noreferrer">
-                      Live site <Icon name="arrow" size={14} />
-                    </a>
-                  )}
-                  {proj.repo && (
-                    <a href={proj.repo} target="_blank" rel="noreferrer">
-                      Source <Icon name="arrow" size={14} />
-                    </a>
-                  )}
-                </div>
-              )}
-              {proj.caseStudy && (
-                <details className="case" open={proj.featured || undefined}>
-                  <summary>Case study</summary>
-                  <dl className={proj.featured ? "case-grid" : undefined}>
-                    <div>
-                      <dt>Problem</dt>
-                      <dd>{proj.caseStudy.problem}</dd>
-                    </div>
-                    <div>
-                      <dt>Approach</dt>
-                      <dd>{proj.caseStudy.approach}</dd>
-                    </div>
-                    <div>
-                      <dt>Outcome</dt>
-                      <dd>{proj.caseStudy.outcome}</dd>
-                    </div>
-                  </dl>
-                </details>
-              )}
-            </article>
+              <span className="see-all">
+                Read more <Icon name="arrow" size={14} />
+              </span>
+            </LoadingLink>
           ))}
+          {p.projects.length % 2 === 1 && (
+            <LoadingLink href="/projects" className="tile link-tile ink c1 more-tile">
+              <p className="label">Everything I&apos;ve built</p>
+              <p className="big">All projects, with case studies</p>
+              <Icon name="arrow" />
+            </LoadingLink>
+          )}
         </div>
       </section>
 
@@ -228,10 +197,13 @@ export default async function Home() {
                     <span className="kind">{role.tag}</span>
                   </div>
                   <p className="org">{role.org}</p>
-                  <p>{role.summary}</p>
+                  {role.short && <p>{role.short}</p>}
                 </li>
               ))}
             </ul>
+            <LoadingLink className="see-all" href="/experience">
+              Full experience <Icon name="arrow" size={14} />
+            </LoadingLink>
           </div>
           {p.education.map((e) => (
             <div className="tile c2" key={e.degree}>
@@ -239,16 +211,9 @@ export default async function Home() {
               <h3>{e.degree}</h3>
               <p className="muted">{e.meta}</p>
               <p>{e.note}</p>
-              {e.modules?.length > 0 && (
-                <>
-                  <p className="label modules-label">Modules</p>
-                  <ul className="modules">
-                    {e.modules.map((m) => (
-                      <li key={m}>{m}</li>
-                    ))}
-                  </ul>
-                </>
-              )}
+              <LoadingLink className="see-all" href="/experience#education">
+                Modules and details <Icon name="arrow" size={14} />
+              </LoadingLink>
             </div>
           ))}
         </div>
@@ -273,8 +238,13 @@ export default async function Home() {
             <PhotoGrid photos={photos} count={photos.length ? Math.min(photos.length, 9) : 6} sizes="(max-width: 620px) 33vw, 200px" />
             <p className="muted">{p.interests.photography}</p>
           </LoadingLink>
-          <div className="tile c2">
-            <Icon name="globe" />
+          <LoadingLink className="tile link-tile c2 travel-tile" href="/travel">
+            <div className="row">
+              <Icon name="globe" />
+              <span className="see-all">
+                Map and trips <Icon name="arrow" size={14} />
+              </span>
+            </div>
             <p className="label">Travelling</p>
             <p className="big">{p.interests.travel}</p>
             {p.interests.places?.length > 0 && (
@@ -284,7 +254,7 @@ export default async function Home() {
                 ))}
               </div>
             )}
-          </div>
+          </LoadingLink>
           <div className="tile c2">
             <Icon name="paddle" />
             <p className="label">Table tennis and sport</p>
@@ -305,12 +275,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <footer>
-        <span>
-          © {new Date().getFullYear()} {p.name}
-        </span>
-        <a href="#top">Back to top</a>
-      </footer>
+      <SiteFooter name={p.name} home />
     </div>
   );
 }

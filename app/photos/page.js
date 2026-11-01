@@ -1,5 +1,7 @@
 import Image from "next/image";
 import LoadingLink from "@/components/LoadingLink";
+import SiteHeader from "@/components/SiteHeader";
+import SiteFooter from "@/components/SiteFooter";
 import Icon from "@/components/Icon";
 import { getProfile } from "@/lib/profile";
 import { getPhotos, formatPhotoDate } from "@/lib/photos";
@@ -13,19 +15,10 @@ export const metadata = {
 
 export default async function PhotosPage() {
   const [p, { photos }] = await Promise.all([getProfile(), getPhotos()]);
-  const firstName = p.name.split(" ")[0];
 
   return (
     <div className="wrap">
-      <nav className="nav" aria-label="Main">
-        <LoadingLink className="mark" href="/">
-          {firstName}
-          <i />
-        </LoadingLink>
-        <LoadingLink className="btn small" href="/#life">
-          <Icon name="back" size={16} /> Back to portfolio
-        </LoadingLink>
-      </nav>
+      <SiteHeader profile={p} />
 
       <header className="block-head photos-head">
         <p className="kicker">
@@ -33,6 +26,11 @@ export default async function PhotosPage() {
         </p>
         <h1 className="page-title">Photography</h1>
         <p className="muted">{p.interests?.photography}</p>
+        <p>
+          <LoadingLink className="see-all" href="/travel">
+            Travel photos live in their trip albums <Icon name="arrow" size={14} />
+          </LoadingLink>
+        </p>
       </header>
 
       {photos.length === 0 ? (
@@ -74,12 +72,7 @@ export default async function PhotosPage() {
         </ul>
       )}
 
-      <footer>
-        <span>
-          © {new Date().getFullYear()} {p.name}
-        </span>
-        <LoadingLink href="/">Back to portfolio</LoadingLink>
-      </footer>
+      <SiteFooter name={p.name} />
     </div>
   );
 }
