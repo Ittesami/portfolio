@@ -1,4 +1,5 @@
 import LoadingLink from "@/components/LoadingLink";
+import MobileMenu from "@/components/MobileMenu";
 
 const LINKS = [
   ["/projects", "Projects"],
@@ -15,6 +16,7 @@ export default function SiteHeader({ profile, home = false }) {
 
   return (
     <nav className="nav" aria-label="Main">
+      <MobileMenu links={LINKS} home={home} name={firstName} />
       {home ? (
         <a className="mark" href="#top">
           {firstName}
