@@ -7,7 +7,7 @@
 //   settings - admin settings: _id "prayer" (prayer location/method), _id "fitness" (fitness profile)
 //   albums   - travel albums (photos join one through photos.albumId)
 //   exercises, workouts, bodyweights, fitnessPlans - fitness tracker (built-in exercises added if missing)
-//   meals, sleep - food and sleep logs
+//   meals, sleepSessions - food and sleep logs
 // Usage: put the real password in .env.local, then `npm run seed`. Safe to re-run.
 import { MongoClient } from "mongodb";
 import { profile } from "../lib/profile-data.js";
@@ -25,7 +25,7 @@ try {
   const db = client.db(process.env.MONGODB_DB || "portfolio");
 
   const existing = new Set((await db.listCollections({}, { nameOnly: true }).toArray()).map((c) => c.name));
-  for (const name of ["profile", "messages", "photos", "todos", "prayers", "settings", "exercises", "workouts", "bodyweights", "fitnessPlans", "albums", "meals", "sleep"]) {
+  for (const name of ["profile", "messages", "photos", "todos", "prayers", "settings", "exercises", "workouts", "bodyweights", "fitnessPlans", "albums", "meals", "sleepSessions"]) {
     if (!existing.has(name)) await db.createCollection(name);
   }
 

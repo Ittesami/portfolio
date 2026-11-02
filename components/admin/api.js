@@ -37,3 +37,14 @@ export function nowHHMM() {
 export function prettyDate(date, opts = { weekday: "long", day: "numeric", month: "long" }) {
   return new Date(`${date}T12:00:00`).toLocaleDateString("en-GB", opts);
 }
+
+// Local date-time stamps, "YYYY-MM-DDTHH:MM" (the format of <input type="datetime-local">).
+export function nowStamp(d = new Date()) {
+  return `${todayStr(d)}T${d.toTimeString().slice(0, 5)}`;
+}
+
+export function shiftStamp(stamp, minutes) {
+  const d = new Date(`${stamp}:00`);
+  d.setMinutes(d.getMinutes() + minutes);
+  return nowStamp(d);
+}

@@ -573,12 +573,27 @@ code{font-family:var(--mono);font-size:.9em;background:var(--chip);border-radius
 .meal-entry:first-child{border-top:0}
 .meal-entry.editing{display:block}
 .meal-text{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
-.sleep-form-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.quality-row{gap:10px 18px}
+.sleep-now{gap:8px}
+.sleep-now.asleep{background:var(--ink-tile);border-color:var(--ink-tile);color:var(--ink-tile-text)}
+.sleep-now.asleep .label,.sleep-now.asleep .muted,.sleep-now.asleep .text-btn{color:var(--ink-tile-muted)}
+.sleep-now-big{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:-.01em;margin:0}
+.big-btn{padding:13px 22px;font-size:16px}
+.sleep-form-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.sleep-form > p{margin:-4px 0 0;min-height:1.2em}
+.field-block{display:flex;flex-direction:column;gap:6px}
+.quality-seg{flex-wrap:wrap;max-width:100%}
+.quality-seg .seg-btn.on{background:var(--ink);color:var(--surface)}
+.sleep-now.asleep .quality-seg{background:transparent}
 .sleep-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.sleep-list{list-style:none;margin:0;padding:18px 22px;display:grid;gap:10px}
-.sleep-list li{display:grid;grid-template-columns:96px minmax(0,1fr) 70px;gap:6px 10px;align-items:center}
-.sleep-detail{grid-column:1/-1;padding-left:106px}
+.sleep-days{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.sleep-day{gap:8px;padding:16px 20px}
+.sleep-day-head{display:grid;grid-template-columns:96px minmax(0,1fr) 70px;gap:10px;align-items:center}
+.sleep-sessions{list-style:none;margin:0;padding:0;display:grid}
+.sleep-session{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:2px 12px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.sleep-session.editing{display:block;padding:12px 0}
+.sleep-times{font-family:var(--mono);font-size:14px}
+.sleep-session .sleep-detail{grid-column:1/-1;grid-row:2}
+.sleep-session .form-status{grid-column:1/-1}
 .sleep-hours{text-align:right;font-family:var(--mono)}
 .bar.short{background:var(--dot)}
 @media (max-width:960px){.macro-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -587,12 +602,13 @@ code{font-family:var(--mono);font-size:.9em;background:var(--chip);border-radius
   .meal-form-row{grid-template-columns:1fr}
   .meal-entry{grid-template-columns:48px minmax(0,1fr)}
   .meal-entry .todo-actions{grid-column:2}
-  .sleep-form-row{grid-template-columns:1fr 1fr}
-  .sleep-form-row > label:first-child{grid-column:1/-1}
+  .sleep-form-row{grid-template-columns:1fr}
   .sleep-stats{grid-template-columns:1fr}
-  .sleep-list{padding:16px}
-  .sleep-list li{grid-template-columns:80px minmax(0,1fr) 62px}
-  .sleep-detail{padding-left:0}
+  .sleep-day{padding:14px 16px}
+  .sleep-day-head{grid-template-columns:84px minmax(0,1fr) 62px}
+  .sleep-session{grid-template-columns:minmax(0,1fr) auto}
+  .sleep-session .todo-actions{grid-column:1/-1;grid-row:3}
+  .sleep-now .form-foot .btn{flex:1;justify-content:center}
 }
 
 /* Admin messages */
