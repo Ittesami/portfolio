@@ -1,4 +1,3 @@
-import Icon from "@/components/Icon";
 import LoadingLink from "@/components/LoadingLink";
 
 const LINKS = [
@@ -34,11 +33,6 @@ export default function SiteHeader({ profile, home = false }) {
           </li>
         ))}
       </ul>
-      {profile.links?.cv && (
-        <a className="btn small" href={profile.links.cv} target="_blank" rel="noreferrer">
-          <Icon name="download" size={16} /> CV
-        </a>
-      )}
     </nav>
   );
 }

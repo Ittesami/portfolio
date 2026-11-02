@@ -11,7 +11,7 @@ function refresh() {
   revalidatePath("/travel", "layout");
 }
 
-// PATCH { title?, date?, description?, hidden?, avatar?, albumId? }
+// PATCH { title?, date?, description?, hidden?, avatar?, hero?, albumId? }
 export async function PATCH(request, { params }) {
   if (!isAdmin(request)) return unauthorised();
   const id = decodeURIComponent((await params).id);
@@ -27,6 +27,8 @@ export async function PATCH(request, { params }) {
     return NextResponse.json({ error: "That album doesn't exist." }, { status: 400 });
   // Only one profile picture at a time.
   if (data.avatar) await db.collection("photos").updateMany({ avatar: true }, { $set: { avatar: false } });
+  // Only one photo on the home page card.
+  if (data.hero) await db.collection("photos").updateMany({ hero: true }, { $set: { hero: false } });
   await db
     .collection("photos")
     .updateOne({ _id: id }, { $set: { ...data, updatedAt: new Date() } }, { upsert: photo.kind === "folder" });

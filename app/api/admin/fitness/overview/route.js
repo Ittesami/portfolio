@@ -50,6 +50,5 @@ export async function GET(request) {
     weeks,
     bests: exerciseHistory(allTime).slice(0, 12),
     bodyweights: bodyweights.map((b) => ({ date: b._id, kg: b.kg })),
-    claudeReady: Boolean(process.env.ANTHROPIC_API_KEY),
   });
 }

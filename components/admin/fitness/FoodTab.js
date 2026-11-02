@@ -295,7 +295,7 @@ function FoodLog() {
           ))
         )}
       </div>
-      <p className="muted small">Write it the way you&apos;d say it. Claude reads this log when it plans your next week.</p>
+      <p className="muted small">Write it the way you&apos;d say it.</p>
     </section>
   );
 }

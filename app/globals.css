@@ -78,10 +78,16 @@ a{color:inherit}
 /* Hero */
 .hero-grid{margin-bottom:8px}
 .intro{justify-content:space-between;gap:28px;padding:28px}
-.avatar{position:relative;width:72px;height:72px;border-radius:50%;overflow:hidden;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:24px}
-.avatar img{object-fit:cover}
+/* Photo on the left, name and role on the right; description runs full width below. */
+.intro-head{display:flex;align-items:center;gap:24px}
+.intro-head h1{margin:0}
+.intro-head .eyebrow{margin-top:12px}
+.avatar{position:relative;flex:none;width:150px;height:150px;border-radius:50%;overflow:hidden;border:1.5px solid var(--ink);background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:40px}
+.avatar:has(img){background:var(--surface)}
+.avatar img{object-fit:cover;object-position:center 15%}
+.intro .lead{max-width:none}
 h1{font-family:var(--display);font-weight:800;font-size:clamp(40px,5.4vw,64px);line-height:.95;letter-spacing:-.04em;margin:10px 0 0;text-wrap:balance}
-h1 .dot{color:var(--dot)}
+h1 .dot{color:var(--dot);display:inline;width:auto;height:auto;border-radius:0;background:none;box-shadow:none}
 .lead{font-size:17px;color:var(--muted);max-width:46ch;margin:16px 0 0!important;text-wrap:pretty}
 .cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
 
@@ -285,6 +291,12 @@ code{font-family:var(--mono);font-size:.9em;background:var(--chip);border-radius
 .admin-row.is-hidden .admin-thumb{opacity:.45}
 .admin-thumb{display:block;aspect-ratio:4/5;border-radius:12px;overflow:hidden;background:var(--chip)}
 .admin-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb-wrap{position:relative}
+/* Tick on a thumbnail: picks the photo for the home page Photography card. */
+.hero-tick{position:absolute;top:8px;right:8px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;cursor:pointer;background:color-mix(in srgb,var(--surface) 85%,transparent);color:var(--muted);border:1.5px solid var(--line);box-shadow:0 1px 4px rgb(0 0 0/.15)}
+.hero-tick:hover:not(:disabled){color:var(--accent);border-color:var(--accent)}
+.hero-tick.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.hero-tick:disabled{cursor:default;opacity:.5}
 .badges{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .badge{font-size:12px;font-weight:600;border-radius:999px;padding:3px 10px;background:var(--chip);color:var(--muted)}
 .badge.warn{background:color-mix(in srgb,var(--dot) 25%,var(--surface));color:var(--ink)}
@@ -380,7 +392,9 @@ code{font-family:var(--mono);font-size:.9em;background:var(--chip);border-radius
   .nav ul::-webkit-scrollbar{display:none}
   .nav ul a{white-space:nowrap}
   .intro{padding:22px;gap:22px}
-  .avatar{width:60px;height:60px;font-size:20px}
+  .intro-head{gap:16px}
+  .avatar{width:96px;height:96px;font-size:28px}
+  .intro-head .eyebrow{margin-top:8px}
   h1{font-size:clamp(36px,11vw,44px)}
   .lead{font-size:16px}
   .cta .btn{flex:1;justify-content:center}
@@ -393,7 +407,7 @@ code{font-family:var(--mono);font-size:.9em;background:var(--chip);border-radius
   .mail .btn{width:100%;justify-content:center}
   .photo-wall{grid-template-columns:1fr}
   .admin-row{grid-template-columns:1fr}
-  .admin-thumb{max-width:220px}
+  .thumb-wrap{max-width:220px}
   .dash{grid-template-columns:1fr}
   .admin-bar{gap:12px}
   .admin-bar nav{order:3;flex-basis:100%}
@@ -582,3 +596,15 @@ code{font-family:var(--mono);font-size:.9em;background:var(--chip);border-radius
   .sleep-list li{grid-template-columns:80px minmax(0,1fr) 62px}
   .sleep-detail{padding-left:0}
 }
+
+/* Admin messages */
+.message-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.message-bar p{margin:0}
+.message-bar .seg-btn.on{background:var(--ink);color:var(--surface)}
+.message.unread{box-shadow:inset 3px 0 0 var(--accent)}
+.message-head{display:flex;justify-content:space-between;align-items:flex-start;gap:6px 16px;flex-wrap:wrap}
+.message-head p{margin:0}
+.message-from{font-weight:700;font-size:17px;display:flex;align-items:center;gap:8px}
+.message-head a{word-break:break-all}
+.message-body{white-space:pre-wrap;overflow-wrap:anywhere;margin:4px 0}
+.nav-count{min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:12px;font-weight:700;display:inline-grid;place-items:center}

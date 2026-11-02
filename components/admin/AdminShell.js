@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import LoadingLink from "@/components/LoadingLink";
 import Icon from "@/components/Icon";
 import Spinner from "./Spinner";
+import { MESSAGES_CHANGED } from "./MessageList";
 
 const NAV = [
   { href: "/admin", label: "Today" },
@@ -13,11 +14,25 @@ const NAV = [
   { href: "/admin/fitness", label: "Fitness" },
   { href: "/admin/travel", label: "Travel" },
   { href: "/admin/photos", label: "Photos" },
+  { href: "/admin/messages", label: "Messages" },
 ];
 
 export default function AdminShell({ children }) {
   const path = usePathname();
   const [leaving, setLeaving] = useState(false);
+  const [unread, setUnread] = useState(0);
+
+  // Unread contact messages, refreshed on every page change and whenever the inbox changes.
+  useEffect(() => {
+    const refresh = () =>
+      fetch("/api/admin/messages?count=1", { cache: "no-store" })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => d && setUnread(d.unread))
+        .catch(() => {});
+    refresh();
+    window.addEventListener(MESSAGES_CHANGED, refresh);
+    return () => window.removeEventListener(MESSAGES_CHANGED, refresh);
+  }, [path]);
 
   async function logout() {
     setLeaving(true);
@@ -38,6 +53,11 @@ export default function AdminShell({ children }) {
               <li key={n.href}>
                 <LoadingLink href={n.href} aria-current={path === n.href ? "page" : undefined}>
                   {n.label}
+                  {n.href === "/admin/messages" && unread > 0 && (
+                    <span className="nav-count" aria-label={`${unread} unread`}>
+                      {unread}
+                    </span>
+                  )}
                 </LoadingLink>
               </li>
             ))}

@@ -70,42 +70,23 @@ function PlanDay({ day, done, today, onLog }) {
   );
 }
 
-function Plan({ data, today, onLog, onGenerate, generating, genError }) {
+function Plan({ data, today, onLog }) {
   const plan = data.plan;
   const loggedDates = new Set(data.weekWorkouts.map((w) => w.date));
   return (
     <section className="fit-section">
-      <div className="row section-row">
-        <h2 className="section-title">Plan</h2>
-        <button
-          type="button"
-          className="btn small primary"
-          onClick={onGenerate}
-          disabled={generating}
-          aria-busy={generating}
-          title={data.claudeReady ? "" : "Needs ANTHROPIC_API_KEY"}
-        >
-          {generating && <Spinner />}
-          {generating ? "Claude is planning… (about a minute)" : plan ? "Re-plan with Claude" : "Plan this week with Claude"}
-        </button>
-      </div>
-      {genError && <p className="form-status err">{genError}</p>}
-      {!data.claudeReady && !plan && (
-        <p className="muted small">Add ANTHROPIC_API_KEY to your environment variables to let Claude write plans.</p>
-      )}
+      <h2 className="section-title">Plan</h2>
 
       {!plan ? (
         <div className="tile empty-state">
           <p className="big">No plan for this week yet.</p>
-          <p className="muted">
-            Ask Claude to write one. It looks at the last four weeks you logged, your profile and your body weight.
-          </p>
+          <p className="muted">You can still log workouts from the Progress tab.</p>
         </div>
       ) : (
         <>
           <div className="tile plan-review">
             <p className="label">
-              {plan.source === "claude" ? "Claude's review" : "Coach's notes"} · {prettyDate(data.dates[0], { day: "numeric", month: "short" })} –{" "}
+              Coach&apos;s notes · {prettyDate(data.dates[0], { day: "numeric", month: "short" })} –{" "}
               {prettyDate(data.dates[6], { day: "numeric", month: "short" })}
             </p>
             <p>{plan.review?.summary}</p>
@@ -371,7 +352,7 @@ function ProfileForm({ profile, onSaved }) {
   return (
     <details className="tile fit-profile">
       <summary>
-        Your profile <span className="muted small">· what Claude plans around</span>
+        Your profile <span className="muted small">· used for your food targets</span>
       </summary>
       <form className="form" onSubmit={save}>
         <div className="row">
@@ -409,7 +390,7 @@ function ProfileForm({ profile, onSaved }) {
           </label>
         </div>
         <label>
-          <span className="field-label">Notes for Claude <span className="opt">optional</span></span>
+          <span className="field-label">Notes <span className="opt">optional</span></span>
           <textarea
             value={form.notes}
             onChange={set("notes")}
@@ -437,7 +418,6 @@ export default function FitnessTracker() {
   const [library, setLibrary] = useState(null);
   const [error, setError] = useState("");
   const [draft, setDraft] = useState(null);
-  const [gen, setGen] = useState({ busy: false, error: "" });
   const [view, setView] = useState("plan");
 
   const load = useCallback(async (w) => {
@@ -463,17 +443,6 @@ export default function FitnessTracker() {
   useEffect(() => {
     if (week) load(week);
   }, [week, load]);
-
-  async function generate() {
-    setGen({ busy: true, error: "" });
-    try {
-      await api("/api/admin/fitness/plans/generate", { method: "POST", body: { week, today: todayStr() } });
-      await load(week);
-      setGen({ busy: false, error: "" });
-    } catch (err) {
-      setGen({ busy: false, error: err.message });
-    }
-  }
 
   function switchView(next) {
     setView(next);
@@ -540,9 +509,6 @@ export default function FitnessTracker() {
         <Plan
           data={data}
           today={today}
-          generating={gen.busy}
-          genError={gen.error}
-          onGenerate={generate}
           onLog={(day) => openLogger(planDayToDraft(day, library.exercises))}
         />
       )}

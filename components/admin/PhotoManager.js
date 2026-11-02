@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "./api";
 import Spinner from "./Spinner";
+import Icon from "@/components/Icon";
 
 const MAX_EDGE = 2400; // px on the long side
 const TARGET_BYTES = 3.5 * 1024 * 1024;
@@ -124,10 +125,25 @@ function PhotoRow({ photo, isProfile, albums, isCover, onSetCover, onChanged }) 
 
   return (
     <li className={`tile admin-row${photo.hidden ? " is-hidden" : ""}`}>
-      <a className="admin-thumb" href={photo.src} target="_blank" rel="noreferrer">
-        {/* Plain img: small thumbnails don't need the optimiser. */}
-        <img src={photo.src} alt="" loading="lazy" />
-      </a>
+      <div className="thumb-wrap">
+        <a className="admin-thumb" href={photo.src} target="_blank" rel="noreferrer">
+          {/* Plain img: small thumbnails don't need the optimiser. */}
+          <img src={photo.src} alt="" loading="lazy" />
+        </a>
+        {!photo.avatarFile && (
+          <button
+            type="button"
+            className={`hero-tick${photo.hero ? " on" : ""}`}
+            aria-pressed={photo.hero}
+            aria-label={photo.hero ? "Shown on the home page Photography card. Click to unpick." : "Show on the home page Photography card"}
+            title={photo.hero ? "On the home page card" : "Show on the home page card"}
+            disabled={Boolean(busy) || photo.hidden}
+            onClick={() => run("hero", () => patch({ hero: !photo.hero }))}
+          >
+            {busy === "hero" ? <Spinner /> : <Icon name="check" size={16} />}
+          </button>
+        )}
+      </div>
       <form
         className="form"
         onSubmit={(e) => {
@@ -139,6 +155,7 @@ function PhotoRow({ photo, isProfile, albums, isCover, onSetCover, onChanged }) 
           <span className="badge">{photo.kind === "upload" ? "Uploaded" : "In code folder"}</span>
           {photo.hidden && <span className="badge warn">Hidden</span>}
           {isProfile && <span className="badge accent">Profile picture</span>}
+          {photo.hero && <span className="badge accent">Home page card</span>}
           {isCover && <span className="badge accent">Album cover</span>}
           {photo.kind === "folder" && <span className="label file-name">{photo.file}</span>}
         </div>
@@ -288,7 +305,7 @@ export default function PhotoManager({ albumId = null, albums = null, coverPhoto
         <ul className="admin-list">
           {photos.map((ph) => (
             <PhotoRow
-              key={`${ph.id}:${ph.hidden}:${ph.avatar}:${ph.albumId}`}
+              key={`${ph.id}:${ph.hidden}:${ph.avatar}:${ph.hero}:${ph.albumId}`}
               photo={ph}
               albums={albums}
               isProfile={!albumId && (ph.avatar || (!photos.some((x) => x.avatar) && ph.avatarFile))}

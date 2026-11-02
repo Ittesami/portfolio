@@ -43,7 +43,7 @@ function PhotoGrid({ photos, count, sizes }) {
 }
 
 export default async function Home() {
-  const [p, { avatar, photos }] = await Promise.all([getProfile(), getPhotos()]);
+  const [p, { avatar, photos, hero }] = await Promise.all([getProfile(), getPhotos()]);
   const featured = p.projects.find((x) => x.featured) ?? p.projects[0];
   const links = [...(p.links?.profiles ?? []), { label: "Email", href: `mailto:${p.email}`, icon: "mail" }];
 
@@ -54,19 +54,23 @@ export default async function Home() {
       {/* ---------- Hero bento ---------- */}
       <header id="top" className="bento hero-grid">
         <section className="tile intro c2 r2">
-          <div className="avatar">
-            {avatar ? (
-              <Image src={avatar} alt={p.name} fill sizes="72px" priority />
-            ) : (
-              <span>{initials(p.name)}</span>
-            )}
+          <div className="intro-head">
+            <div className="avatar">
+              {avatar ? (
+                <Image src={avatar} alt={p.name} fill sizes="(max-width: 620px) 96px, 150px" priority />
+              ) : (
+                <span>{initials(p.name)}</span>
+              )}
+            </div>
+            <div>
+              <h1>
+                {p.name}
+                <span className="dot">.</span>
+              </h1>
+              <p className="eyebrow">{p.role}</p>
+            </div>
           </div>
-          <div>
-            <p className="eyebrow">{p.role}</p>
-            <h1>
-              {p.name}
-              <span className="dot">.</span>
-            </h1>
+          <div className="intro-text">
             <p className="lead">{p.lead}</p>
             <div className="cta">
               <a className="btn primary" href="#projects">See projects</a>
@@ -122,7 +126,7 @@ export default async function Home() {
         </section>
 
         <LoadingLink className="tile photo-tile c1 link-tile" href="/photos" aria-label="Photography: see all photos">
-          <PhotoGrid photos={photos} count={1} sizes="(max-width: 620px) 100vw, 280px" />
+          <PhotoGrid photos={hero ? [hero] : []} count={1} sizes="(max-width: 620px) 100vw, 280px" />
           <span className="photo-label">
             <Icon name="camera" size={16} /> Photography
           </span>

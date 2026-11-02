@@ -3,7 +3,7 @@
 Next.js (App Router) app with its backend in the same project:
 
 - a public portfolio site with a photography page
-- a private admin panel at `/admin` with a to-do list, prayer tracker, fitness (coming next) and photo manager
+- a private admin panel at `/admin` with a to-do list, prayer tracker, fitness tracker, travel albums, photo manager and contact-form inbox
 
 ## Run locally
 
@@ -21,7 +21,6 @@ npm run dev
 | `ADMIN_PASSWORD` | Password for logging in at `/admin/login` (8+ characters) |
 | `SESSION_SECRET` | Signs login cookies. Changing it logs you out everywhere |
 | `ADMIN_TOKEN` | Optional bearer token for scripts calling the admin APIs |
-| `ANTHROPIC_API_KEY` | Claude API key, used to write weekly fitness plans |
 
 Set the same variables on your host when you deploy.
 
@@ -67,6 +66,8 @@ logins from that address for 10 minutes.
   [Open-Meteo's geocoder](https://open-meteo.com/en/docs/geocoding-api) so typos are caught.
 - **Fitness**: see below.
 - **Photos**: see below.
+- **Messages**: the contact form inbox, newest first. New messages are marked and counted in the
+  nav; mark them read or unread, reply by email (opens your mail app), or delete them.
 
 ## Fitness tracker
 
@@ -78,13 +79,10 @@ Private, at `/admin/fitness`.
 - **Logging**: strength exercises take sets of reps (+ optional kg); timed ones take minutes/seconds
   (+ optional km). "Log this workout" on a planned day pre-fills its exercises and set counts.
 - **Progress**: body-weight log, sessions and total kg lifted per week for 8 weeks, best set per exercise.
-- **Profile**: height, weight, goal, experience, equipment, days per week and notes, which the planner reads.
-- **Weekly plans with Claude**: "Plan this week with Claude" sends your profile, body weights, the
-  last 4 weeks of workouts, per-exercise history and last week's plan to Claude (`claude-opus-5-5`,
-  structured output validated with Zod; see `lib/fitness-coach.js`). It reviews how the week went
-  and writes a 7-day plan with sets, reps, suggested loads and rest. Plans are stored per week in
-  `fitnessPlans` (`_id` = the Monday). Refusal fallbacks are enabled (`fallbacks: "default"`).
-  Generating a plan takes about a minute and costs a few cents of API usage.
+- **Profile**: height, weight, age, goal, experience, equipment, days per week and notes; height,
+  weight and age set the daily food targets.
+- **Weekly plans**: written by hand and stored per week in `fitnessPlans` (`_id` = the Monday).
+  The Plan tab shows the week's plan; "Log this workout" pre-fills a day's exercises.
 
 ## Travel
 
@@ -114,7 +112,8 @@ Two ways to add them:
    `lib/photos-manifest.json`.
 
 In the Photos tab you can give any photo an optional title, date and description, hide it from
-the site, or make it your profile picture. Uploaded photos can also be deleted; folder photos
+the site, or make it your profile picture. The tick on a thumbnail picks the photo for the home page's
+Photography card (otherwise it shows the newest photo). Uploaded photos can also be deleted; folder photos
 can only be hidden there (delete the file to remove one).
 
 Order on the site: dated photos newest first, then undated uploads newest first, then folder

@@ -43,6 +43,7 @@ const PATHS = {
     </>
   ),
   download: <path d="M12 4v11m-5-5 5 5 5-5M5 20h14" />,
+  check: <path d="m5 12.5 4.5 4.5L19 7.5" />,
   code: <path d="m8 8-4 4 4 4m8-8 4 4-4 4" />,
   briefcase: (
     <>
