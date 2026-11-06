@@ -324,6 +324,9 @@ code{font-family:var(--mono);font-size:.9em;background:var(--chip);border-radius
 .plan-ex-dose{font-family:var(--mono);font-size:12px;color:var(--accent)}
 .plan-ex-load{font-size:13px;font-weight:500}
 .plan-tips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.plan-day-daily{display:grid;gap:4px;margin-top:6px;padding-top:8px;border-top:1px solid var(--line)}
+.plan-day-daily p{margin:0}
+.plan-menus{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
 .workouts{list-style:none;margin:0;padding:0 22px}
 .workout{padding:14px 0;border-top:1px solid var(--line);display:grid;gap:6px}
 .workout:first-child{border-top:0}

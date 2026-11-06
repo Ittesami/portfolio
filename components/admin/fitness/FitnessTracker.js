@@ -66,6 +66,20 @@ function PlanDay({ day, done, today, onLog }) {
           </button>
         </>
       )}
+      {(day.food || day.bed) && (
+        <div className="plan-day-daily small">
+          {day.food && (
+            <p>
+              <strong>Food:</strong> {day.food}
+            </p>
+          )}
+          {day.bed && (
+            <p>
+              <strong>Sleep:</strong> {day.bed}
+            </p>
+          )}
+        </div>
+      )}
     </li>
   );
 }
@@ -117,11 +131,26 @@ function Plan({ data, today, onLog }) {
               <PlanDay key={d.date} day={d} done={loggedDates.has(d.date)} today={today} onLog={onLog} />
             ))}
           </ul>
+          {plan.menus?.length > 0 && (
+            <div className="plan-menus">
+              {plan.menus.map((m) => (
+                <div className="tile" key={m.name}>
+                  <p className="label">{m.name}</p>
+                  <p className="big small-big">{m.target}</p>
+                  <ul className="bullets">
+                    {m.meals.map((meal) => (
+                      <li key={meal}>{meal}</li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          )}
           {(plan.eating?.length > 0 || plan.sleep?.length > 0) && (
             <div className="plan-tips">
               {plan.eating?.length > 0 && (
                 <div className="tile">
-                  <p className="label">Food last week</p>
+                  <p className="label">Food so far</p>
                   <ul className="bullets">
                     {plan.eating.map((r) => (
                       <li key={r}>{r}</li>
@@ -131,7 +160,7 @@ function Plan({ data, today, onLog }) {
               )}
               {plan.sleep?.length > 0 && (
                 <div className="tile">
-                  <p className="label">Sleep last week</p>
+                  <p className="label">Sleep so far</p>
                   <ul className="bullets">
                     {plan.sleep.map((r) => (
                       <li key={r}>{r}</li>
