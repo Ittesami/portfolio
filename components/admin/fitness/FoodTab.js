@@ -4,8 +4,10 @@ import { useCallback, useEffect, useState } from "react";
 import { api, nowHHMM, prettyDate, shiftDate, todayStr } from "../api";
 import Spinner from "../Spinner";
 import { MEAL_PLAN, describeItem, mealMacros, nutritionTargets, planMacros } from "@/lib/nutrition";
+import { describeEstimate, estimateMeal, mealNumbers } from "@/lib/food-estimate";
 
 const r = (n) => Math.round(n);
+const fmt = (n) => Math.round(n).toLocaleString("en-GB");
 
 function Targets({ profile }) {
   const t = nutritionTargets(profile);
@@ -76,16 +78,34 @@ function ExampleDay() {
   );
 }
 
+// "≈ 650 kcal · 35 g protein", or a nudge when the text has nothing it recognises.
+function EstimateLine({ meal, text }) {
+  const n = mealNumbers(meal ?? { text });
+  if (!n) return <p className="meal-est muted">No known foods found. Add the calories yourself under &ldquo;Adjust&rdquo;.</p>;
+  return (
+    <p className="meal-est">
+      <strong>
+        {n.manual ? "" : "≈ "}
+        {fmt(n.kcal)} kcal · {r(n.p)} g protein
+      </strong>
+      <span className="muted">{n.manual ? " · your numbers" : n.items.length ? ` · ${describeEstimate(n)}` : ""}</span>
+    </p>
+  );
+}
+
 function MealForm({ initial, submitLabel, onSubmit, onCancel }) {
-  const [form, setForm] = useState(initial);
+  const [form, setForm] = useState({ kcal: "", protein: "", ...initial, kcal: initial.kcal ?? "", protein: initial.protein ?? "" });
+  const [adjust, setAdjust] = useState(form.kcal !== "" || form.protein !== "");
   const [state, setState] = useState({ busy: false, error: "" });
+  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+  const est = estimateMeal(form.text);
 
   async function submit(e) {
     e.preventDefault();
     if (!form.text.trim()) return setState({ busy: false, error: "Write what you had." });
     setState({ busy: true, error: "" });
     try {
-      await onSubmit(form);
+      await onSubmit(adjust ? form : { ...form, kcal: "", protein: "" });
       setState({ busy: false, error: "" });
     } catch (err) {
       setState({ busy: false, error: err.message });
@@ -97,19 +117,64 @@ function MealForm({ initial, submitLabel, onSubmit, onCancel }) {
       <div className="meal-form-row">
         <label>
           Time
-          <input type="time" value={form.time} onChange={(e) => setForm((f) => ({ ...f, time: e.target.value }))} required />
+          <input type="time" value={form.time} onChange={set("time")} required />
         </label>
         <label>
           What you had
           <textarea
             value={form.text}
-            onChange={(e) => setForm((f) => ({ ...f, text: e.target.value }))}
+            onChange={set("text")}
             maxLength={1000}
-            placeholder="2 cups rice, chicken curry, 1 glass of milk"
+            placeholder="2 cups rice, 150 g chicken curry, 1 glass of milk"
             autoFocus
           />
         </label>
       </div>
+      {form.text.trim() && (
+        <div className="meal-preview">
+          {est ? (
+            <p className="meal-est">
+              <strong>
+                ≈ {fmt(est.kcal)} kcal · {est.p} g protein
+              </strong>
+              <span className="muted"> · {describeEstimate(est)}</span>
+            </p>
+          ) : (
+            <p className="meal-est muted">No known foods found yet. Numbers and units help: &ldquo;2 cups rice&rdquo;, &ldquo;150 g chicken&rdquo;.</p>
+          )}
+          {!adjust && (
+            <button type="button" className="text-btn" onClick={() => setAdjust(true)}>
+              Adjust
+            </button>
+          )}
+        </div>
+      )}
+      {adjust && (
+        <div className="row meal-adjust">
+          <label>
+            <span className="field-label">
+              Calories <span className="opt">kcal</span>
+            </span>
+            <input type="number" inputMode="numeric" min="0" max="5000" value={form.kcal} onChange={set("kcal")} placeholder={est ? String(est.kcal) : ""} />
+          </label>
+          <label>
+            <span className="field-label">
+              Protein <span className="opt">g</span>
+            </span>
+            <input type="number" inputMode="numeric" min="0" max="400" value={form.protein} onChange={set("protein")} placeholder={est ? String(est.p) : ""} />
+          </label>
+          <button
+            type="button"
+            className="text-btn"
+            onClick={() => {
+              setAdjust(false);
+              setForm((f) => ({ ...f, kcal: "", protein: "" }));
+            }}
+          >
+            Use the estimate
+          </button>
+        </div>
+      )}
       <div className="form-foot">
         <button className="btn primary" type="submit" disabled={state.busy} aria-busy={state.busy}>
           {state.busy && <Spinner />}
@@ -134,7 +199,7 @@ function MealRow({ meal, onSaved, onDeleted }) {
     return (
       <li className="meal-entry editing">
         <MealForm
-          initial={{ time: meal.time, text: meal.text }}
+          initial={{ time: meal.time, text: meal.text, kcal: meal.kcal, protein: meal.protein }}
           submitLabel="Save"
           onCancel={() => setEditing(false)}
           onSubmit={async (form) => {
@@ -153,7 +218,10 @@ function MealRow({ meal, onSaved, onDeleted }) {
   return (
     <li className="meal-entry">
       <span className="meal-time">{meal.time}</span>
-      <p className="meal-text">{meal.text}</p>
+      <div>
+        <p className="meal-text">{meal.text}</p>
+        <EstimateLine meal={meal} />
+      </div>
       <div className="todo-actions">
         {confirm ? (
           <>
@@ -194,7 +262,41 @@ function MealRow({ meal, onSaved, onDeleted }) {
   );
 }
 
-function FoodLog() {
+// Calories, protein, carbs and fat for a list of meals; `unknown` counts meals with no numbers.
+function totals(meals) {
+  return meals.reduce(
+    (a, m) => {
+      const n = mealNumbers(m);
+      if (!n) return { ...a, unknown: a.unknown + 1 };
+      return { kcal: a.kcal + n.kcal, p: a.p + n.p, c: a.c + n.c, f: a.f + n.f, unknown: a.unknown };
+    },
+    { kcal: 0, p: 0, c: 0, f: 0, unknown: 0 },
+  );
+}
+
+// One "eaten / target" bar.
+function Meter({ label, value, target, unit }) {
+  const pct = target ? Math.min(100, (value / target) * 100) : 0;
+  return (
+    <div className="meter">
+      <div className="meter-row">
+        <span className="label">{label}</span>
+        <span className="small">
+          <strong>{fmt(value)}</strong>
+          <span className="muted">
+            {" "}
+            / {fmt(target)} {unit}
+          </span>
+        </span>
+      </div>
+      <span className="bar-track">
+        <span className={`bar ${value < target * 0.8 ? "short" : ""}`} style={{ width: `${pct}%` }} />
+      </span>
+    </div>
+  );
+}
+
+function FoodLog({ targets, onChanged }) {
   const [today, setToday] = useState("");
   const [date, setDate] = useState("");
   const [meals, setMeals] = useState(null);
@@ -222,6 +324,11 @@ function FoodLog() {
   }, [date, load]);
 
   const sortByTime = (list) => [...list].sort((a, b) => a.time.localeCompare(b.time));
+  const change = (fn) => {
+    setMeals(fn);
+    onChanged();
+  };
+  const sum = meals ? totals(meals) : null;
 
   return (
     <section className="fit-section">
@@ -258,6 +365,13 @@ function FoodLog() {
           </div>
         </div>
 
+        {sum && meals.length > 0 && (
+          <div className="day-meters">
+            <Meter label="Calories" value={sum.kcal} target={targets.kcal} unit="kcal" />
+            <Meter label="Protein" value={sum.p} target={targets.protein} unit="g" />
+          </div>
+        )}
+
         {adding && (
           <MealForm
             key={date}
@@ -266,7 +380,7 @@ function FoodLog() {
             onCancel={() => setAdding(false)}
             onSubmit={async (form) => {
               const { meal } = await api("/api/admin/fitness/meals", { method: "POST", body: { ...form, date } });
-              setMeals((list) => sortByTime([...(list ?? []), meal]));
+              change((list) => sortByTime([...(list ?? []), meal]));
               setAdding(false);
             }}
           />
@@ -285,25 +399,194 @@ function FoodLog() {
             <ul className="meal-entries">
               {meals.map((m) => (
                 <MealRow
-                  key={m.id}
+                  key={`${m.id}:${m.text}:${m.time}:${m.kcal}:${m.protein}`}
                   meal={m}
-                  onSaved={(saved) => setMeals((list) => sortByTime(list.map((x) => (x.id === saved.id ? saved : x))))}
-                  onDeleted={(id) => setMeals((list) => list.filter((x) => x.id !== id))}
+                  onSaved={(saved) => change((list) => sortByTime(list.map((x) => (x.id === saved.id ? saved : x))))}
+                  onDeleted={(id) => change((list) => list.filter((x) => x.id !== id))}
                 />
               ))}
             </ul>
           ))
         )}
       </div>
-      <p className="muted small">Write it the way you&apos;d say it.</p>
+      <p className="muted small">
+        Write it the way you&apos;d say it; amounts help (&ldquo;2 cups rice&rdquo;, &ldquo;150 g chicken&rdquo;). Numbers are
+        estimates. Use &ldquo;Adjust&rdquo; on a meal when you know better.
+      </p>
+    </section>
+  );
+}
+
+// Monday of the week a date falls in.
+function mondayOf(date) {
+  const day = new Date(`${date}T12:00:00`).getDay();
+  return shiftDate(date, -((day + 6) % 7));
+}
+
+const WEEKS_SHOWN = 8;
+
+// Day-by-day and week-by-week numbers from the food log.
+function Analytics({ targets, version }) {
+  const [today, setToday] = useState("");
+  const [week, setWeek] = useState("");
+  const [meals, setMeals] = useState(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const t = todayStr();
+    setToday(t);
+    setWeek((w) => w || mondayOf(t));
+    api(`/api/admin/fitness/meals?from=${shiftDate(mondayOf(t), -7 * (WEEKS_SHOWN - 1))}&to=${t}`)
+      .then((d) => setMeals(d.meals))
+      .catch((err) => setError(err.message));
+  }, [version]);
+
+  if (error) return <p className="form-status err">{error}</p>;
+  if (!meals || !week)
+    return (
+      <div className="inline-loading" role="status" aria-label="Loading analytics">
+        <span className="spinner" />
+      </div>
+    );
+
+  const byDay = new Map();
+  for (const m of meals) byDay.set(m.date, [...(byDay.get(m.date) ?? []), m]);
+  const dayStats = (date) => {
+    const list = byDay.get(date) ?? [];
+    return { date, count: list.length, ...totals(list) };
+  };
+  const weekStats = (monday) => {
+    const days = Array.from({ length: 7 }, (_, i) => dayStats(shiftDate(monday, i)));
+    const logged = days.filter((d) => d.count > 0);
+    const avg = (k) => (logged.length ? logged.reduce((a, d) => a + d[k], 0) / logged.length : 0);
+    return { monday, days, logged: logged.length, kcal: avg("kcal"), p: avg("p"), c: avg("c"), f: avg("f"), total: logged.reduce((a, d) => a + d.kcal, 0) };
+  };
+
+  const firstMonday = shiftDate(mondayOf(today), -7 * (WEEKS_SHOWN - 1));
+  const current = weekStats(week);
+  const allWeeks = Array.from({ length: WEEKS_SHOWN }, (_, i) => weekStats(shiftDate(firstMonday, 7 * i)))
+    .filter((w) => w.logged > 0)
+    .reverse();
+  const loggedDays = [...byDay.keys()].map(dayStats);
+  const overall = loggedDays.length
+    ? { kcal: loggedDays.reduce((a, d) => a + d.kcal, 0) / loggedDays.length, p: loggedDays.reduce((a, d) => a + d.p, 0) / loggedDays.length }
+    : null;
+  const scale = Math.max(targets.kcal * 1.1, ...current.days.map((d) => d.kcal));
+  const gap = current.logged ? current.kcal - targets.kcal : null;
+  const weekLabel = `${prettyDate(week, { day: "numeric", month: "short" })} – ${prettyDate(shiftDate(week, 6), { day: "numeric", month: "short" })}`;
+
+  return (
+    <section className="fit-section">
+      <h2 className="section-title">Analytics</h2>
+      <div className="tile">
+        <div className="prayer-head">
+          <div>
+            <p className="label">{week === mondayOf(today) ? "This week" : "Week"}</p>
+            <p className="big">{weekLabel}</p>
+          </div>
+          <div className="day-nav">
+            <button type="button" className="btn small" onClick={() => setWeek(shiftDate(week, -7))} disabled={week <= firstMonday} aria-label="Previous week">
+              ←
+            </button>
+            <button type="button" className="btn small" onClick={() => setWeek(shiftDate(week, 7))} disabled={week >= mondayOf(today)} aria-label="Next week">
+              →
+            </button>
+          </div>
+        </div>
+
+        <div className="macro-grid analytics-grid">
+          <div className="macro-tile">
+            <p className="label">Calories a day</p>
+            <p className="macro-value">{current.logged ? fmt(current.kcal) : "–"}</p>
+            <p className="muted small">
+              {gap === null ? "Nothing logged" : `${gap < 0 ? fmt(-gap) + " below" : fmt(gap) + " above"} your ${fmt(targets.kcal)} target`}
+            </p>
+          </div>
+          <div className="macro-tile">
+            <p className="label">Protein a day</p>
+            <p className="macro-value">{current.logged ? `${r(current.p)} g` : "–"}</p>
+            <p className="muted small">Target {targets.protein} g</p>
+          </div>
+          <div className="macro-tile">
+            <p className="label">Carbs · fat a day</p>
+            <p className="macro-value">{current.logged ? `${r(current.c)} · ${r(current.f)} g` : "–"}</p>
+            <p className="muted small">
+              Targets {targets.carbs} · {targets.fat} g
+            </p>
+          </div>
+          <div className="macro-tile">
+            <p className="label">Days logged</p>
+            <p className="macro-value">{current.logged} / 7</p>
+            <p className="muted small">{fmt(current.total)} kcal in total</p>
+          </div>
+        </div>
+
+        <p className="label">Day by day</p>
+        <ul className="food-days">
+          {current.days.map((d) => {
+            const future = d.date > today;
+            return (
+              <li key={d.date} className={future ? "future" : ""}>
+                <span className="small food-day-name">
+                  {d.date === today ? "Today" : prettyDate(d.date, { weekday: "short", day: "numeric" })}
+                </span>
+                <span className="bar-track food-bar">
+                  <span className={`bar ${d.kcal < targets.kcal * 0.8 ? "short" : ""}`} style={{ width: `${(d.kcal / scale) * 100}%` }} />
+                  <span className="target-mark" style={{ left: `${(targets.kcal / scale) * 100}%` }} aria-hidden="true" />
+                </span>
+                <span className="small food-day-num">
+                  {d.count ? (
+                    <>
+                      <strong>{fmt(d.kcal)}</strong> kcal · {r(d.p)} g P
+                    </>
+                  ) : (
+                    <span className="muted">{future ? "" : "Not logged"}</span>
+                  )}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+        <p className="muted small">
+          The line on each bar is your daily target. Bars turn amber below 80% of it. Averages count only the days you logged.
+        </p>
+      </div>
+
+      {allWeeks.length > 0 && (
+        <div className="tile">
+          <p className="label">Week by week</p>
+          <ul className="food-weeks">
+            {allWeeks.map((w) => (
+              <li key={w.monday}>
+                <button type="button" className={`food-week${w.monday === week ? " on" : ""}`} onClick={() => setWeek(w.monday)}>
+                  <span className="small">{prettyDate(w.monday, { day: "numeric", month: "short" })}</span>
+                  <span className="small">
+                    <strong>{fmt(w.kcal)}</strong> kcal · {r(w.p)} g P
+                  </span>
+                  <span className="muted small">{w.logged} days</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+          {overall && (
+            <p className="small">
+              Since you started logging: <strong>{fmt(overall.kcal)} kcal</strong> and <strong>{r(overall.p)} g protein</strong> a day on average,
+              over {loggedDays.length} days.
+            </p>
+          )}
+        </div>
+      )}
     </section>
   );
 }
 
 export default function FoodTab({ profile }) {
+  const targets = nutritionTargets(profile);
+  const [version, setVersion] = useState(0);
   return (
     <>
-      <FoodLog />
+      <FoodLog targets={targets} onChanged={() => setVersion((v) => v + 1)} />
+      <Analytics targets={targets} version={version} />
       <Targets profile={profile} />
       <ExampleDay />
     </>

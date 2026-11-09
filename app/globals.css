@@ -311,7 +311,6 @@ code{font-family:var(--mono);font-size:.9em;background:var(--chip);border-radius
 .week-label{text-align:center}
 .small-big{font-size:17px}
 .bullets{margin:0;padding-left:18px;display:grid;gap:4px}
-.plan-review{gap:8px}
 .plan-days{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
 .plan-day{gap:6px}
 .plan-day h3{margin:0;font-family:var(--display);font-size:20px;letter-spacing:-.01em}
@@ -323,10 +322,8 @@ code{font-family:var(--mono);font-size:.9em;background:var(--chip);border-radius
 .plan-ex-name{font-weight:600}
 .plan-ex-dose{font-family:var(--mono);font-size:12px;color:var(--accent)}
 .plan-ex-load{font-size:13px;font-weight:500}
-.plan-tips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .plan-day-daily{display:grid;gap:4px;margin-top:6px;padding-top:8px;border-top:1px solid var(--line)}
 .plan-day-daily p{margin:0}
-.plan-menus{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
 .workouts{list-style:none;margin:0;padding:0 22px}
 .workout{padding:14px 0;border-top:1px solid var(--line);display:grid;gap:6px}
 .workout:first-child{border-top:0}
@@ -420,7 +417,7 @@ code{font-family:var(--mono);font-size:.9em;background:var(--chip);border-radius
   .seg{width:100%}
   .seg-btn{flex:1;justify-content:center;padding:9px 6px}
   .login-card{padding:22px}
-  .plan-tips,.progress-grid{grid-template-columns:1fr}
+  .progress-grid{grid-template-columns:1fr}
   .workouts{padding:0 18px}
   .picker-controls{grid-template-columns:1fr}
   .set-grid{grid-template-columns:28px repeat(2,minmax(0,1fr)) 28px}
@@ -647,3 +644,70 @@ code{font-family:var(--mono);font-size:.9em;background:var(--chip);border-radius
 @media (min-width:621px){.menu-drawer,.menu-backdrop{display:none}}
 @media (max-width:620px){.burger{display:flex}}
 @media (prefers-reduced-motion: reduce){.menu-drawer,.menu-drawer.open,.menu-backdrop{transition:none}}
+
+/* Food: estimates and analytics */
+.meal-est{margin:4px 0 0;font-size:13px;overflow-wrap:anywhere}
+.meal-preview{display:flex;align-items:baseline;justify-content:space-between;gap:4px 12px;flex-wrap:wrap;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--accent) 7%,var(--surface))}
+.meal-preview .meal-est{margin:0}
+.meal-adjust{align-items:end}
+.day-meters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 20px;padding:4px 0 8px}
+.meter{display:grid;gap:6px}
+.meter-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.analytics-grid{margin:4px 0 6px}
+.analytics-grid .macro-tile{padding:12px 14px;border-radius:14px;background:var(--bg);display:flex;flex-direction:column}
+.analytics-grid .macro-tile p{margin:0}
+.analytics-grid .macro-value{font-size:22px}
+.food-days{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.food-days li{display:grid;grid-template-columns:64px minmax(0,1fr) 150px;gap:10px;align-items:center}
+.food-days li.future{opacity:.45}
+.food-bar{position:relative;overflow:visible}
+.food-bar .bar{position:relative}
+.target-mark{position:absolute;top:-3px;bottom:-3px;width:2px;border-radius:2px;background:var(--ink);opacity:.55}
+.food-day-num{text-align:right;font-family:var(--mono);font-size:12px}
+.food-weeks{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.food-week{width:100%;display:grid;grid-template-columns:70px minmax(0,1fr) auto;gap:10px;align-items:center;text-align:left;font:inherit;color:var(--ink);background:none;border:0;border-radius:10px;padding:8px 10px;cursor:pointer}
+.food-week:hover{background:var(--chip)}
+.food-week.on{background:color-mix(in srgb,var(--accent) 10%,var(--surface))}
+@media (max-width:620px){
+  .day-meters{grid-template-columns:1fr}
+  .analytics-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .analytics-grid .macro-value{font-size:19px}
+  .food-days li{grid-template-columns:52px minmax(0,1fr);gap:4px 10px}
+  .food-day-num{grid-column:2;text-align:left}
+}
+
+/* Plan: one day at a time on phones, extra notes folded away */
+.plan-summary{margin:0 0 12px}
+.day-strip,.day-strip-key{display:none}
+.day-chip{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;padding:8px 2px;border:1.5px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.day-chip-wd{font-family:var(--mono);font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.day-chip-d{font-family:var(--display);font-weight:700;font-size:18px;line-height:1.1}
+.day-chip.today .day-chip-wd{color:var(--accent)}
+.day-chip.on{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.day-chip.on .day-chip-wd{color:inherit;opacity:.75}
+.day-chip-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--line)}
+.day-chip-dot.train{background:var(--accent)}
+.day-chip-dot.away{background:var(--dot)}
+.day-chip-dot.done{background:#2E9D62}
+.day-strip-key .day-chip-dot{margin:0 3px 0 10px;vertical-align:middle}
+.day-strip-key .day-chip-dot:first-child{margin-left:0}
+.plan-more-list{display:grid;gap:10px;margin-top:14px}
+.plan-more{padding:0;gap:0}
+.plan-more summary{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:2px 12px;padding:16px 20px;cursor:pointer;font-weight:700;list-style:none}
+.plan-more summary::-webkit-details-marker{display:none}
+.plan-more summary::after{content:"+";font-family:var(--mono);font-weight:400;color:var(--muted);margin-left:auto}
+.plan-more[open] summary::after{content:"–"}
+.plan-more summary .muted{font-weight:400;flex:1}
+.plan-more-body{display:grid;gap:8px;padding:0 20px 18px}
+.plan-more-body p{margin:0}
+.plan-menu{display:grid;gap:4px;padding-top:10px;border-top:1px solid var(--line)}
+.plan-menu:first-child{border-top:0;padding-top:0}
+@media (max-width:620px){
+  .day-strip{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;margin-bottom:6px}
+  .day-strip-key{display:block;margin:0 0 12px}
+  .plan-days{grid-template-columns:1fr}
+  .plan-day:not(.picked){display:none}
+  .plan-more summary{padding:14px 16px}
+  .plan-more summary .muted{display:none}
+  .plan-more-body{padding:0 16px 16px}
+}

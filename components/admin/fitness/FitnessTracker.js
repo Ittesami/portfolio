@@ -28,9 +28,9 @@ function defaultWeekDay() {
   return new Date(`${t}T12:00:00`).getDay() === 0 ? shiftDate(t, 1) : t;
 }
 
-function PlanDay({ day, done, today, onLog }) {
+function PlanDay({ day, done, today, picked, onLog }) {
   return (
-    <li className={`tile plan-day${day.rest ? " rest" : ""}${day.date === today ? " is-today" : ""}`}>
+    <li className={`tile plan-day${day.rest ? " rest" : ""}${day.date === today ? " is-today" : ""}${picked ? " picked" : ""}`}>
       <div className="row">
         <p className="label">{short(day.date)}</p>
         {done && <span className="badge accent">Logged</span>}
@@ -84,116 +84,123 @@ function PlanDay({ day, done, today, onLog }) {
   );
 }
 
+// A bullet list inside a collapsed section; nothing when the list is empty.
+function Bullets({ label, items }) {
+  if (!items?.length) return null;
+  return (
+    <>
+      <p className="label">{label}</p>
+      <ul className="bullets">
+        {items.map((r) => (
+          <li key={r}>{r}</li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+function More({ title, hint, children }) {
+  return (
+    <details className="tile plan-more">
+      <summary>
+        <span>{title}</span>
+        {hint && <span className="muted small">{hint}</span>}
+      </summary>
+      <div className="plan-more-body">{children}</div>
+    </details>
+  );
+}
+
+// Day kind for the dot in the day picker.
+const dayKind = (d) => (!d.rest ? "train" : /london|travel|class/i.test(d.title) ? "away" : "rest");
+
 function Plan({ data, today, onLog }) {
   const plan = data.plan;
   const loggedDates = new Set(data.weekWorkouts.map((w) => w.date));
-  return (
-    <section className="fit-section">
-      <h2 className="section-title">Plan</h2>
+  const [picked, setPicked] = useState(null);
 
-      {!plan ? (
+  if (!plan) {
+    return (
+      <section className="fit-section">
         <div className="tile empty-state">
           <p className="big">No plan for this week yet.</p>
           <p className="muted">You can still log workouts from the Progress tab.</p>
         </div>
-      ) : (
-        <>
-          <div className="tile plan-review">
-            <p className="label">
-              Coach&apos;s notes · {prettyDate(data.dates[0], { day: "numeric", month: "short" })} –{" "}
-              {prettyDate(data.dates[6], { day: "numeric", month: "short" })}
-            </p>
-            <p>{plan.review?.summary}</p>
-            <p className="big small-big">{plan.weekSummary}</p>
-            {plan.review?.highlights?.length > 0 && (
-              <>
-                <p className="label">Highlights</p>
+      </section>
+    );
+  }
+
+  const dates = plan.days.map((d) => d.date);
+  // Phones show one day: the one you tapped, else today, else the first day.
+  const selected = dates.includes(picked) ? picked : dates.includes(today) ? today : dates[0];
+
+  return (
+    <section className="fit-section">
+      {plan.weekSummary && <p className="muted small plan-summary">{plan.weekSummary}</p>}
+
+      <div className="day-strip" role="tablist" aria-label="Pick a day">
+        {plan.days.map((d) => (
+          <button
+            key={d.date}
+            type="button"
+            role="tab"
+            aria-selected={d.date === selected}
+            className={`day-chip${d.date === selected ? " on" : ""}${d.date === today ? " today" : ""}`}
+            onClick={() => setPicked(d.date)}
+          >
+            <span className="day-chip-wd">{d.date === today ? "Today" : prettyDate(d.date, { weekday: "short" })}</span>
+            <span className="day-chip-d">{prettyDate(d.date, { day: "numeric" })}</span>
+            <span className={`day-chip-dot ${loggedDates.has(d.date) ? "done" : dayKind(d)}`} aria-hidden="true" />
+          </button>
+        ))}
+      </div>
+      <p className="day-strip-key muted small" aria-hidden="true">
+        <span className="day-chip-dot train" /> Gym <span className="day-chip-dot rest" /> Rest <span className="day-chip-dot away" /> Away{" "}
+        <span className="day-chip-dot done" /> Logged
+      </p>
+
+      <ul className="plan-days">
+        {plan.days.map((d) => (
+          <PlanDay key={d.date} day={d} done={loggedDates.has(d.date)} today={today} picked={d.date === selected} onLog={onLog} />
+        ))}
+      </ul>
+
+      <div className="plan-more-list">
+        {(plan.review?.summary || plan.review?.adjustments?.length > 0) && (
+          <More title="Coach's notes" hint="How it's going, what changes">
+            {plan.review?.summary && <p>{plan.review.summary}</p>}
+            <Bullets label="Highlights" items={plan.review?.highlights} />
+            <Bullets label="This week" items={plan.review?.adjustments} />
+          </More>
+        )}
+        {plan.menus?.length > 0 && (
+          <More title="Menus" hint={plan.menus.map((m) => m.name.split(" ·")[0]).join(", ")}>
+            {plan.menus.map((m) => (
+              <div key={m.name} className="plan-menu">
+                <p className="label">{m.name}</p>
+                <p className="big small-big">{m.target}</p>
                 <ul className="bullets">
-                  {plan.review.highlights.map((h) => (
-                    <li key={h}>{h}</li>
+                  {m.meals.map((meal) => (
+                    <li key={meal}>{meal}</li>
                   ))}
                 </ul>
-              </>
-            )}
-            {plan.review?.adjustments?.length > 0 && (
-              <>
-                <p className="label">This week</p>
-                <ul className="bullets">
-                  {plan.review.adjustments.map((h) => (
-                    <li key={h}>{h}</li>
-                  ))}
-                </ul>
-              </>
-            )}
-          </div>
-          <ul className="plan-days">
-            {plan.days.map((d) => (
-              <PlanDay key={d.date} day={d} done={loggedDates.has(d.date)} today={today} onLog={onLog} />
+              </div>
             ))}
-          </ul>
-          {plan.menus?.length > 0 && (
-            <div className="plan-menus">
-              {plan.menus.map((m) => (
-                <div className="tile" key={m.name}>
-                  <p className="label">{m.name}</p>
-                  <p className="big small-big">{m.target}</p>
-                  <ul className="bullets">
-                    {m.meals.map((meal) => (
-                      <li key={meal}>{meal}</li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          )}
-          {(plan.eating?.length > 0 || plan.sleep?.length > 0) && (
-            <div className="plan-tips">
-              {plan.eating?.length > 0 && (
-                <div className="tile">
-                  <p className="label">Food so far</p>
-                  <ul className="bullets">
-                    {plan.eating.map((r) => (
-                      <li key={r}>{r}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {plan.sleep?.length > 0 && (
-                <div className="tile">
-                  <p className="label">Sleep so far</p>
-                  <ul className="bullets">
-                    {plan.sleep.map((r) => (
-                      <li key={r}>{r}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
-          <div className="plan-tips">
-            {plan.progressionRules?.length > 0 && (
-              <div className="tile">
-                <p className="label">How to progress</p>
-                <ul className="bullets">
-                  {plan.progressionRules.map((r) => (
-                    <li key={r}>{r}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            {plan.recoveryTips?.length > 0 && (
-              <div className="tile">
-                <p className="label">Recovery</p>
-                <ul className="bullets">
-                  {plan.recoveryTips.map((r) => (
-                    <li key={r}>{r}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        </>
-      )}
+          </More>
+        )}
+        {(plan.eating?.length > 0 || plan.sleep?.length > 0) && (
+          <More title="Food and sleep so far" hint="What your logs show">
+            <Bullets label="Food" items={plan.eating} />
+            <Bullets label="Sleep" items={plan.sleep} />
+          </More>
+        )}
+        {(plan.progressionRules?.length > 0 || plan.recoveryTips?.length > 0) && (
+          <More title="Rules and recovery" hint="When to add weight">
+            <Bullets label="How to progress" items={plan.progressionRules} />
+            <Bullets label="Recovery" items={plan.recoveryTips} />
+          </More>
+        )}
+      </div>
     </section>
   );
 }

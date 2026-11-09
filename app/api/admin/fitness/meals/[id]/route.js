@@ -3,7 +3,7 @@ import { requireDb } from "@/lib/mongodb";
 import { isAdmin, unauthorised } from "@/lib/auth";
 import { mealToClient, parseId, parseMeal } from "@/lib/daily-logs";
 
-// PUT { date, time, text }
+// PUT { date, time, text, kcal?, protein? } (empty kcal/protein = use the estimate)
 export async function PUT(request, { params }) {
   if (!isAdmin(request)) return unauthorised();
   const _id = parseId((await params).id);
