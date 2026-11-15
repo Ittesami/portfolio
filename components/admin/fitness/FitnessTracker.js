@@ -6,6 +6,7 @@ import Spinner from "../Spinner";
 import WorkoutLogger, { planDayToDraft, workoutToDraft } from "./WorkoutLogger";
 import FoodTab from "./FoodTab";
 import SleepTab from "./SleepTab";
+import ExportPanel from "./ExportPanel";
 
 // Remembers which tab (plan, progress, food or sleep) you last used, in this browser only.
 const VIEW_KEY = "fitness-view";
@@ -516,6 +517,8 @@ export default function FitnessTracker() {
           </button>
         ))}
       </div>
+
+      <ExportPanel />
 
       {view === "plan" && (
         <div className="week-nav tile">

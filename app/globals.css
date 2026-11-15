@@ -711,3 +711,11 @@ code{font-family:var(--mono);font-size:.9em;background:var(--chip);border-radius
   .plan-more summary .muted{display:none}
   .plan-more-body{padding:0 16px 16px}
 }
+
+/* Export for AI */
+.export-open{align-self:flex-start;margin-bottom:14px}
+.export-panel{margin-bottom:16px;gap:12px}
+.export-panel p{margin:0}
+.export-options{display:flex;flex-wrap:wrap;gap:12px 24px}
+.export-panel .seg-btn.on{background:var(--ink);color:var(--surface)}
+.export-panel textarea{min-height:0}
