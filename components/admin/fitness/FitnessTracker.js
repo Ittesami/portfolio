@@ -113,7 +113,7 @@ function More({ title, hint, children }) {
 }
 
 // Day kind for the dot in the day picker.
-const dayKind = (d) => (!d.rest ? "train" : /london|travel|class/i.test(d.title) ? "away" : "rest");
+const dayKind = (d) => (!d.rest ? "train" : /london|travel|class|uni/i.test(d.title) ? "away" : "rest");
 
 function Plan({ data, today, onLog }) {
   const plan = data.plan;

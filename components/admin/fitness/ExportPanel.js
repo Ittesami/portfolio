@@ -5,9 +5,10 @@ import { todayStr } from "../api";
 import Spinner from "../Spinner";
 
 // Download (or copy, or share) your fitness log as one file to give an AI for a new plan.
-// The note you type is remembered in this browser only.
-const NOTE_KEY = "fitness-export-note";
-const DEFAULT_NOTE = "No gym on Wednesdays and Thursdays (I'm in London for class).";
+// The note you type is remembered in this browser only. Standing rules (like which days
+// you can train) belong in your profile notes, which the export always includes.
+const NOTE_KEY = "fitness-export-note-v2";
+const DEFAULT_NOTE = "";
 
 export default function ExportPanel() {
   const [open, setOpen] = useState(false);
