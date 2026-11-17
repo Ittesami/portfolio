@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "prebuild": "node scripts/photos-manifest.mjs",
+    "prebuild": "node scripts/photos-manifest.mjs && node scripts/study-notes.mjs",
     "build": "next build",
     "start": "next start",
     "seed": "node --env-file=.env.local scripts/seed.mjs"

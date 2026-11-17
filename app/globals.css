@@ -818,3 +818,46 @@ a.study-item-title:hover{color:var(--accent)}
   .quiz-questions{padding-left:18px}
   .item-form-row{grid-template-columns:1fr}
 }
+
+/* Lesson reading page */
+.lesson{max-width:760px}
+.lesson > .label{margin:0 0 6px;color:var(--course)}
+.lesson-title{margin-bottom:8px}
+.lesson-status{margin-bottom:14px}
+.lesson-body{padding:24px 28px;margin-bottom:14px}
+.lesson-actions,.lesson-practice{margin-bottom:14px;gap:12px}
+.lesson-actions > .btn{align-self:flex-start}
+.lesson-practice p{margin:0}
+.lesson-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:24px}
+.lesson-nav-link{display:flex;flex-direction:column;gap:4px;text-decoration:none;color:var(--ink);font-weight:600}
+.lesson-nav-link:hover{border-color:var(--course)}
+.lesson-nav-link.next{text-align:right;align-items:flex-end}
+/* Markdown */
+.md{font-size:16px;line-height:1.65;overflow-wrap:break-word}
+.md > :first-child{margin-top:0}
+.md p{margin:0 0 14px}
+.md h2.md-h2{font-family:var(--display);font-size:22px;letter-spacing:-.01em;margin:30px 0 10px;padding-top:18px;border-top:1px solid var(--line)}
+.md h3.md-h3{font-size:18px;margin:22px 0 8px}
+.md h4.md-h4{font-size:16px;margin:18px 0 6px}
+.md code{font-family:var(--mono);font-size:.88em;background:var(--chip);border-radius:6px;padding:1px 6px}
+.md .md-code{margin:0 0 16px;padding:14px 16px;border-radius:12px;background:#14161D;color:#E4E6EE;overflow-x:auto;font-size:13.5px;line-height:1.55;-webkit-overflow-scrolling:touch}
+.md .md-code code{background:none;padding:0;font-size:inherit;color:inherit;white-space:pre}
+.md-list{margin:0 0 14px;padding-left:22px;display:grid;gap:6px}
+.md-list .md-list{margin:6px 0 0}
+.md-quote{margin:0 0 16px;padding:10px 16px;border-left:3px solid var(--course);background:var(--bg);border-radius:0 10px 10px 0}
+.md-table-wrap{overflow-x:auto;margin:0 0 16px;-webkit-overflow-scrolling:touch}
+.md-table{border-collapse:collapse;width:100%;font-size:14.5px}
+.md-table th,.md-table td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.md-table th{font-weight:700;background:var(--bg);white-space:nowrap}
+.md-table td:first-child{white-space:nowrap}
+.md-answers{margin:4px 0 0;padding:12px 16px;border-radius:12px;background:color-mix(in srgb,var(--course) 7%,var(--surface));border:1px solid color-mix(in srgb,var(--course) 25%,var(--line))}
+.md-answers summary{cursor:pointer;font-weight:700;color:var(--course)}
+.md-answers[open] summary{margin-bottom:10px}
+@media (max-width:620px){
+  .lesson-body{padding:18px 16px}
+  .md{font-size:15.5px}
+  .md .md-code{margin-left:-6px;margin-right:-6px;font-size:12.5px}
+  .md-table{font-size:13.5px}
+  .lesson-nav{grid-template-columns:1fr}
+  .lesson-nav-link.next{text-align:left;align-items:flex-start}
+}

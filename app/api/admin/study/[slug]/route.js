@@ -2,15 +2,20 @@ import { NextResponse } from "next/server";
 import { requireDb } from "@/lib/mongodb";
 import { isAdmin, unauthorised } from "@/lib/auth";
 import { ensureStudyCourses, newId, parseCourseFields, parseItem, progressMap } from "@/lib/study";
+import { STUDY_NOTES } from "@/lib/study/notes.generated";
 
 export const dynamic = "force-dynamic";
 
 const notFound = () => NextResponse.json({ error: "Course not found." }, { status: 404 });
 const bad = (error) => NextResponse.json({ error }, { status: 400 });
 
+// Items with lesson notes (content/study/<course>/<item>.md) get hasNotes, so the
+// course page can link them to their reading page.
 function courseToClient(c) {
   const { _id, createdAt, ...rest } = c;
-  return { slug: _id, ...rest };
+  const notes = STUDY_NOTES[_id] ?? {};
+  const modules = rest.modules.map((m) => ({ ...m, items: m.items.map((i) => (notes[i.id] ? { ...i, hasNotes: true } : i)) }));
+  return { slug: _id, ...rest, modules };
 }
 
 // GET -> the course with its modules and items, plus your progress on each item

@@ -152,7 +152,11 @@ function ItemRow({ slug, moduleId, item, progress, first, last, onProgress, onCo
           {busy === "check" ? <Spinner /> : done ? "✓" : ""}
         </button>
         <div className="study-item-text">
-          {item.link ? (
+          {item.hasNotes ? (
+            <LoadingLink href={`/admin/study/${slug}/${item.id}`} className="study-item-title">
+              {item.title}
+            </LoadingLink>
+          ) : item.link ? (
             <a href={item.link} target="_blank" rel="noreferrer" className="study-item-title">
               {item.title} <span aria-hidden="true">↗</span>
             </a>
@@ -172,6 +176,11 @@ function ItemRow({ slug, moduleId, item, progress, first, last, onProgress, onCo
           {p.note && !open && <span className="muted small study-note">📝 {p.note}</span>}
         </div>
         <div className="study-item-actions">
+          {item.hasNotes && (
+            <LoadingLink className="btn small" href={`/admin/study/${slug}/${item.id}`}>
+              {p.status === "done" ? "Review" : p.status === "doing" ? "Continue" : "Read"}
+            </LoadingLink>
+          )}
           {item.type === "practice" && (
             <button type="button" className="btn small" onClick={() => setQuiz((q) => !q)}>
               {quiz ? "Hide" : p.attempts ? "Retake" : "Start"}
@@ -315,7 +324,7 @@ function ModuleSection({ slug, mod, progress, open, onToggle, onProgress, onCour
           <ul className="study-items">
             {mod.items.map((item, i) => (
               <ItemRow
-                key={`${item.id}:${item.title}:${item.link ?? ""}:${item.type}:${item.difficulty ?? ""}`}
+                key={`${item.id}:${item.title}:${item.link ?? ""}:${item.type}:${item.difficulty ?? ""}:${item.hasNotes ? 1 : 0}`}
                 slug={slug}
                 moduleId={mod.id}
                 item={item}
