@@ -12,6 +12,7 @@ const NAV = [
   { href: "/admin/todos", label: "To-do" },
   { href: "/admin/prayers", label: "Prayers" },
   { href: "/admin/fitness", label: "Fitness" },
+  { href: "/admin/study", label: "Study" },
   { href: "/admin/travel", label: "Travel" },
   { href: "/admin/photos", label: "Photos" },
   { href: "/admin/messages", label: "Messages" },
@@ -51,7 +52,7 @@ export default function AdminShell({ children }) {
           <ul>
             {NAV.map((n) => (
               <li key={n.href}>
-                <LoadingLink href={n.href} aria-current={path === n.href ? "page" : undefined}>
+                <LoadingLink href={n.href} aria-current={path === n.href || (n.href === "/admin/study" && path.startsWith("/admin/study/")) ? "page" : undefined}>
                   {n.label}
                   {n.href === "/admin/messages" && unread > 0 && (
                     <span className="nav-count" aria-label={`${unread} unread`}>
