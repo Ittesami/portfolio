@@ -6,6 +6,7 @@ export default function TodosPage() {
   return (
     <>
       <h1 className="page-title small-title">To-do</h1>
+      <p className="muted page-intro">Everything you need to do, with a date when it matters.</p>
       <div className="tile">
         <TodoList />
       </div>

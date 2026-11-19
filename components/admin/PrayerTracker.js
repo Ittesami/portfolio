@@ -97,8 +97,8 @@ function Settings({ settings, methods, onSaved }) {
             {state.busy && <Spinner />}
             {state.busy ? "Saving…" : "Save"}
           </button>
-          {state.ok && <p className="form-status">Saved</p>}
-          {state.error && <p className="form-status err">{state.error}</p>}
+          {state.ok && <p role="status" className="form-status">Saved</p>}
+          {state.error && <p role="status" className="form-status err">{state.error}</p>}
         </div>
       </form>
     </details>
@@ -201,12 +201,13 @@ export default function PrayerTracker({ compact = false }) {
   const loading = !data || data.date !== date;
 
   return (
-    <div className="prayers">
+    <div className={`prayers${compact ? " prayers-compact" : ""}`}>
       <div className="tile prayer-day">
         <div className="prayer-head">
           <div>
-            <p className="label">{date === today ? "Today" : date < today ? "Past day" : "Upcoming"}</p>
-            <p className="big">{date && prettyDate(date)}</p>
+            {/* The Today page already shows the date in its header. */}
+            {!compact && <p className="label">{date === today ? "Today" : date < today ? "Past day" : "Upcoming"}</p>}
+            {!compact && <p className="big">{date && prettyDate(date)}</p>}
             <p className="muted small">
               {data?.hijri}
               {data?.settings && ` · ${data.settings.city}`}
@@ -234,8 +235,8 @@ export default function PrayerTracker({ compact = false }) {
         </div>
 
         {!loading && data.times && date === today && <NextPrayer times={data.times} friday={data.friday} />}
-        {!loading && data.timingError && <p className="form-status err">Prayer times unavailable: {data.timingError}</p>}
-        {error && <p className="form-status err">{error}</p>}
+        {!loading && data.timingError && <p role="status" className="form-status err">Prayer times unavailable: {data.timingError}</p>}
+        {error && <p role="status" className="form-status err">{error}</p>}
 
         {loading ? (
           <div className="inline-loading" role="status" aria-label="Loading prayers">

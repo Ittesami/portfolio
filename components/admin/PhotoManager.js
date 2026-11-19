@@ -74,13 +74,13 @@ function Uploader({ albumId, onUploaded }) {
           {state.busy ? `Uploading ${Math.min(state.done + 1, state.total)} of ${state.total}…` : "Choose photos"}
         </button>
         {!state.busy && state.total > 0 && state.errors.length === 0 && (
-          <p className="form-status">
+          <p role="status" className="form-status">
             Uploaded {state.total} photo{state.total > 1 ? "s" : ""}
           </p>
         )}
       </div>
       {state.errors.map((e) => (
-        <p key={e} className="form-status err">
+        <p key={e} role="status" className="form-status err">
           {e}
         </p>
       ))}
@@ -244,7 +244,7 @@ function PhotoRow({ photo, isProfile, albums, isCover, onSetCover, onChanged }) 
                 Delete
               </button>
             ))}
-          {msg.text && <p className={`form-status${msg.error ? " err" : ""}`}>{msg.text}</p>}
+          {msg.text && <p role="status" className={`form-status${msg.error ? " err" : ""}`}>{msg.text}</p>}
         </div>
         {albums && (
           <label className="move-album">
@@ -294,7 +294,7 @@ export default function PhotoManager({ albumId = null, albums = null, coverPhoto
   return (
     <>
       <Uploader albumId={albumId} onUploaded={load} />
-      {error && <p className="form-status err">{error}</p>}
+      {error && <p role="status" className="form-status err">{error}</p>}
       {photos === null && !error && (
         <div className="inline-loading" role="status" aria-label="Loading photos">
           <span className="spinner" />

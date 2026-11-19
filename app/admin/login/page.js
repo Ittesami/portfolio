@@ -7,11 +7,14 @@ export const metadata = { title: "Log in · Daily" };
 export default async function LoginPage() {
   if (await isLoggedIn()) redirect("/admin");
   return (
-    <div className="wrap login-wrap">
+    <div className="wrap admin login-wrap">
       <div className="tile login-card">
-        <p className="kicker">Private</p>
-        <h1 className="page-title small-title">Log in</h1>
-        <p className="muted">Your to-dos, prayers, fitness and photos.</p>
+        <p className="mark" aria-hidden="true">
+          Daily
+          <i />
+        </p>
+        <h1 className="page-title small-title">Welcome back</h1>
+        <p className="muted">Log in to your to-dos, prayers, fitness and study.</p>
         <LoginForm />
       </div>
     </div>

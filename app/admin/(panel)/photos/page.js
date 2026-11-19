@@ -10,9 +10,8 @@ export default async function PhotosAdminPage() {
     <>
       <h1 className="page-title small-title">Photos</h1>
       <p className="muted page-intro">
-        Photos for your public Photography page. Upload, edit, hide or delete them; title, date and description are all
-        optional. To put a photo in a travel album, pick the trip under &ldquo;Album&rdquo; (or upload it from the
-        Travel tab). Photos in the code&apos;s <code>public/photos</code> folder show here too.
+        Photos on your public Photography page. Title, date and description are optional; the tick on a photo puts it
+        on the home page, and &ldquo;Album&rdquo; moves it into a trip.
       </p>
       <PhotoManager albums={albums} />
     </>

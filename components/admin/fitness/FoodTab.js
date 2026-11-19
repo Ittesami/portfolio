@@ -183,7 +183,7 @@ function MealForm({ initial, submitLabel, onSubmit, onCancel }) {
         <button className="btn" type="button" onClick={onCancel}>
           Cancel
         </button>
-        {state.error && <p className="form-status err">{state.error}</p>}
+        {state.error && <p role="status" className="form-status err">{state.error}</p>}
       </div>
     </form>
   );
@@ -257,7 +257,7 @@ function MealRow({ meal, onSaved, onDeleted }) {
           </>
         )}
       </div>
-      {error && <p className="form-status err">{error}</p>}
+      {error && <p role="status" className="form-status err">{error}</p>}
     </li>
   );
 }
@@ -386,7 +386,7 @@ function FoodLog({ targets, onChanged }) {
           />
         )}
 
-        {error && <p className="form-status err">{error}</p>}
+        {error && <p role="status" className="form-status err">{error}</p>}
         {meals === null && !error ? (
           <div className="inline-loading" role="status" aria-label="Loading">
             <span className="spinner" />
@@ -441,7 +441,7 @@ function Analytics({ targets, version }) {
       .catch((err) => setError(err.message));
   }, [version]);
 
-  if (error) return <p className="form-status err">{error}</p>;
+  if (error) return <p role="status" className="form-status err">{error}</p>;
   if (!meals || !week)
     return (
       <div className="inline-loading" role="status" aria-label="Loading analytics">

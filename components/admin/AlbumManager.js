@@ -83,8 +83,8 @@ function AlbumForm({ initial, countries, submitLabel, busyLabel, onSubmit, onCan
             Cancel
           </button>
         )}
-        {state.ok && <p className="form-status">Saved</p>}
-        {state.error && <p className="form-status err">{state.error}</p>}
+        {state.ok && <p role="status" className="form-status">Saved</p>}
+        {state.error && <p role="status" className="form-status err">{state.error}</p>}
       </div>
     </form>
   );
@@ -155,7 +155,7 @@ function AlbumEditor({ album, albums, countries, onChanged, onDeleted, onClose }
               Delete this trip
             </button>
           )}
-          {error && <p className="form-status err">{error}</p>}
+          {error && <p role="status" className="form-status err">{error}</p>}
         </div>
       </div>
 
@@ -196,7 +196,7 @@ export default function AlbumManager() {
     load();
   }, [load]);
 
-  if (error) return <p className="form-status err">{error}</p>;
+  if (error) return <p role="status" className="form-status err">{error}</p>;
   if (!data)
     return (
       <div className="inline-loading" role="status" aria-label="Loading trips">

@@ -148,8 +148,9 @@ function Plan({ data, today, onLog }) {
             aria-selected={d.date === selected}
             className={`day-chip${d.date === selected ? " on" : ""}${d.date === today ? " today" : ""}`}
             onClick={() => setPicked(d.date)}
+            aria-label={`${prettyDate(d.date, { weekday: "long", day: "numeric" })}${d.date === today ? ", today" : ""}`}
           >
-            <span className="day-chip-wd">{d.date === today ? "Today" : prettyDate(d.date, { weekday: "short" })}</span>
+            <span className="day-chip-wd">{prettyDate(d.date, { weekday: "short" })}</span>
             <span className="day-chip-d">{prettyDate(d.date, { day: "numeric" })}</span>
             <span className={`day-chip-dot ${loggedDates.has(d.date) ? "done" : dayKind(d)}`} aria-hidden="true" />
           </button>
@@ -257,7 +258,7 @@ function WorkoutCard({ w, onEdit, onDeleted }) {
         ))}
       </ul>
       {w.notes && <p className="muted small">{w.notes}</p>}
-      {error && <p className="form-status err">{error}</p>}
+      {error && <p role="status" className="form-status err">{error}</p>}
     </li>
   );
 }
@@ -316,8 +317,8 @@ function Progress({ data, onWeightSaved }) {
               {state.busy ? "Saving…" : "Log weight"}
             </button>
           </form>
-          {state.ok && <p className="form-status">Saved</p>}
-          {state.error && <p className="form-status err">{state.error}</p>}
+          {state.ok && <p role="status" className="form-status">Saved</p>}
+          {state.error && <p role="status" className="form-status err">{state.error}</p>}
           {bw.length > 0 && (
             <ul className="weight-list">
               {bw.slice(0, 6).map((b) => (
@@ -440,8 +441,8 @@ function ProfileForm({ profile, onSaved }) {
             {state.busy && <Spinner />}
             {state.busy ? "Saving…" : "Save profile"}
           </button>
-          {state.ok && <p className="form-status">Saved</p>}
-          {state.error && <p className="form-status err">{state.error}</p>}
+          {state.ok && <p role="status" className="form-status">Saved</p>}
+          {state.error && <p role="status" className="form-status err">{state.error}</p>}
         </div>
       </form>
     </details>
@@ -537,7 +538,7 @@ export default function FitnessTracker() {
         </div>
       )}
 
-      {error && <p className="form-status err">{error}</p>}
+      {error && <p role="status" className="form-status err">{error}</p>}
       {!ready && !error && (
         <div className="inline-loading" role="status" aria-label="Loading fitness">
           <span className="spinner" />

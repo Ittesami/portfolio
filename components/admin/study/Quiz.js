@@ -23,7 +23,7 @@ export default function Quiz({ slug, item, onDone, onClose }) {
       .catch((err) => setError(err.message));
   }, [slug, item.id, round]);
 
-  if (error) return <p className="form-status err">{error}</p>;
+  if (error) return <p role="status" className="form-status err">{error}</p>;
   if (!data)
     return (
       <div className="inline-loading" role="status" aria-label="Loading questions">
@@ -135,7 +135,7 @@ export default function Quiz({ slug, item, onDone, onClose }) {
         <button type="button" className="btn" onClick={onClose}>
           Close
         </button>
-        {error && <p className="form-status err">{error}</p>}
+        {error && <p role="status" className="form-status err">{error}</p>}
       </div>
     </div>
   );

@@ -79,18 +79,23 @@ function ItemForm({ initial, submitLabel, onSubmit, onCancel, quizItem = false }
         <button className="btn" type="button" onClick={onCancel}>
           Cancel
         </button>
-        {state.error && <p className="form-status err">{state.error}</p>}
+        {state.error && <p role="status" className="form-status err">{state.error}</p>}
       </div>
     </form>
   );
 }
 
-function ItemRow({ slug, moduleId, item, progress, first, last, onProgress, onCourse }) {
+function ItemRow({ slug, moduleId, item, progress, first, last, startQuiz = false, onProgress, onCourse }) {
   const p = progress ?? { status: "todo", note: "", score: null, best: null, attempts: 0 };
   const done = p.status === "done";
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
-  const [quiz, setQuiz] = useState(false);
+  const [quiz, setQuiz] = useState(startQuiz);
+
+  // Arriving from a lesson's "Start quiz": bring this quiz into view.
+  useEffect(() => {
+    if (startQuiz) requestAnimationFrame(() => document.getElementById(`item-${item.id}`)?.scrollIntoView({ block: "start" }));
+  }, [startQuiz, item.id]);
   const [note, setNote] = useState(p.note ?? "");
   const [score, setScore] = useState(p.score ?? "");
   const [confirm, setConfirm] = useState(false);
@@ -138,7 +143,7 @@ function ItemRow({ slug, moduleId, item, progress, first, last, onProgress, onCo
   ].filter(Boolean);
 
   return (
-    <li className={`study-item status-${p.status}${open ? " open" : ""}`}>
+    <li id={`item-${item.id}`} className={`study-item status-${p.status}${open ? " open" : ""}`}>
       <div className="study-item-main">
         <button
           type="button"
@@ -279,12 +284,12 @@ function ItemRow({ slug, moduleId, item, progress, first, last, onProgress, onCo
           </form>
         </div>
       )}
-      {msg.text && <p className={`form-status${msg.error ? " err" : ""}`}>{msg.text}</p>}
+      {msg.text && <p role="status" className={`form-status${msg.error ? " err" : ""}`}>{msg.text}</p>}
     </li>
   );
 }
 
-function ModuleSection({ slug, mod, progress, open, onToggle, onProgress, onCourse }) {
+function ModuleSection({ slug, mod, progress, open, startQuiz, onToggle, onProgress, onCourse }) {
   const [adding, setAdding] = useState(false);
   const [renaming, setRenaming] = useState(false);
   const [title, setTitle] = useState(mod.title);
@@ -331,6 +336,7 @@ function ModuleSection({ slug, mod, progress, open, onToggle, onProgress, onCour
                 progress={progress[item.id]}
                 first={i === 0}
                 last={i === mod.items.length - 1}
+                startQuiz={startQuiz === item.id}
                 onProgress={onProgress}
                 onCourse={onCourse}
               />
@@ -389,7 +395,7 @@ function ModuleSection({ slug, mod, progress, open, onToggle, onProgress, onCour
               )}
             </div>
           )}
-          {error && <p className="form-status err">{error}</p>}
+          {error && <p role="status" className="form-status err">{error}</p>}
         </div>
       )}
     </section>
@@ -487,7 +493,7 @@ function CourseSettings({ slug, course, onCourse }) {
             </button>
           )}
         </div>
-        {msg.text && <p className={`form-status${msg.error ? " err" : ""}`}>{msg.text}</p>}
+        {msg.text && <p role="status" className={`form-status${msg.error ? " err" : ""}`}>{msg.text}</p>}
       </div>
     </details>
   );
@@ -499,14 +505,19 @@ export default function CourseView({ slug }) {
   const [error, setError] = useState("");
   const [filter, setFilter] = useState("all");
   const [open, setOpen] = useState(null);
+  const [startQuiz, setStartQuiz] = useState(null);
 
   useEffect(() => {
     api(`/api/admin/study/${slug}`)
       .then((d) => {
         setCourse(d.course);
         setProgress(d.progress);
-        // Open the module you're working on: the first one with something not done.
-        const first = d.course.modules.find((m) => m.items.some((i) => d.progress[i.id]?.status !== "done"));
+        // ?quiz=<item> (from a lesson page) opens that quiz's module with the quiz started;
+        // otherwise open the module you're working on: the first with something not done.
+        const quizId = new URLSearchParams(window.location.search).get("quiz");
+        const quizModule = quizId && d.course.modules.find((m) => m.items.some((i) => i.id === quizId && i.type === "practice"));
+        const first = quizModule ?? d.course.modules.find((m) => m.items.some((i) => d.progress[i.id]?.status !== "done"));
+        setStartQuiz(quizModule ? quizId : null);
         setOpen(new Set(first ? [first.id] : []));
       })
       .catch((err) => setError(err.message));
@@ -515,7 +526,7 @@ export default function CourseView({ slug }) {
   if (error)
     return (
       <>
-        <p className="form-status err">{error}</p>
+        <p role="status" className="form-status err">{error}</p>
         <LoadingLink className="btn small" href="/admin/study">
           ← All courses
         </LoadingLink>
@@ -604,6 +615,7 @@ export default function CourseView({ slug }) {
             mod={m}
             progress={progress}
             open={filter !== "all" || open.has(m.id)}
+            startQuiz={startQuiz}
             onToggle={() => toggle(m.id)}
             onProgress={(id, p) =>
               setProgress((all) => {

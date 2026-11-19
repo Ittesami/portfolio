@@ -1,0 +1,286 @@
+/* Daily design system: the private app at /admin.
+   Everything is scoped under .admin so the public portfolio keeps its own look.
+   Brand: black for primary actions and selected states, cobalt for links, focus,
+   progress and the current section, orange (--dot) only for small highlights and warnings. */
+
+/* ---------- Tokens ---------- */
+.admin{
+  /* spacing: 4px base */
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:20px; --s6:24px; --s8:32px; --s10:40px; --s12:48px;
+  /* radius */
+  --r-sm:8px; --r-md:12px; --r-lg:16px; --radius:18px; --r-pill:999px;
+  /* control heights (touch targets grow on coarse pointers, below) */
+  --h-control:42px; --h-control-sm:34px;
+  /* type scale */
+  --fs-xs:12px; --fs-sm:13.5px; --fs-base:15px; --fs-md:17px; --fs-lg:20px; --fs-xl:24px; --fs-title:34px;
+  /* roles */
+  --primary:var(--ink); --primary-ink:var(--surface);
+  --primary-hover:color-mix(in srgb,var(--ink) 84%,var(--surface));
+  --hover:color-mix(in srgb,var(--ink) 5%,var(--surface));
+  --pressed:color-mix(in srgb,var(--ink) 9%,var(--surface));
+  --line-strong:color-mix(in srgb,var(--ink) 22%,var(--line));
+  --danger:#C42F2F; --success:#18794E; --warn:var(--dot); --warn-ink:#8A5300;
+  --danger-soft:color-mix(in srgb,var(--danger) 10%,var(--surface));
+  --success-soft:color-mix(in srgb,var(--success) 11%,var(--surface));
+  --warn-soft:color-mix(in srgb,var(--warn) 18%,var(--surface));
+  --accent-soft:color-mix(in srgb,var(--accent) 9%,var(--surface));
+  /* Cobalt as text (links, text buttons). Lighter in dark mode so small text keeps 4.5:1. */
+  --link:var(--accent);
+  --focus-ring:0 0 0 3px color-mix(in srgb,var(--accent) 32%,transparent);
+  /* elevation: borders separate surfaces; shadows only for things that float */
+  --shadow-sm:0 1px 2px rgb(15 17 25/.06);
+  --shadow-md:0 8px 24px rgb(15 17 25/.10);
+  --shadow-lg:0 18px 50px rgb(15 17 25/.22);
+  font-size:var(--fs-base);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .admin{--link:#8E9EF8;--danger:#F07878;--success:#4CC38A;--warn-ink:#F5B451;--shadow-md:0 8px 24px rgb(0 0 0/.4);--shadow-lg:0 18px 50px rgb(0 0 0/.55)}
+}
+:root[data-theme="dark"] .admin{--link:#8E9EF8;--danger:#F07878;--success:#4CC38A;--warn-ink:#F5B451;--shadow-md:0 8px 24px rgb(0 0 0/.4);--shadow-lg:0 18px 50px rgb(0 0 0/.55)}
+
+/* ---------- Page structure ---------- */
+.admin .admin-main{padding-bottom:var(--s12)}
+.admin .page-title.small-title{font-size:clamp(28px,3.2vw,var(--fs-title));line-height:1.1;letter-spacing:-.03em;margin:var(--s2) 0 var(--s2)}
+.admin .page-intro{max-width:62ch;margin:0 0 var(--s6);color:var(--muted);font-size:var(--fs-base)}
+.admin .section-title{margin:0 0 var(--s3)}
+.admin .page-head{display:flex;justify-content:space-between;align-items:flex-end;gap:var(--s3) var(--s6);flex-wrap:wrap;margin-bottom:var(--s6);max-width:none;padding-top:0}
+.admin .page-head .page-title.small-title{margin:0}
+.admin .page-date{margin:var(--s1) 0 0;color:var(--muted);font-size:var(--fs-md)}
+.admin .tile{border-radius:var(--radius)}
+.admin .link-tile:hover{transform:none;border-color:var(--accent)}
+.admin .empty{padding:var(--s5) var(--s1);color:var(--muted)}
+.admin .inline-loading{padding:var(--s8)}
+.admin code{font-size:.88em}
+
+/* Skip link: hidden until focused with the keyboard. */
+.admin .skip-link{position:absolute;left:var(--s4);top:-60px;z-index:80;padding:10px 16px;border-radius:var(--r-md);background:var(--primary);color:var(--primary-ink);font-weight:600;text-decoration:none}
+.admin .skip-link:focus{top:var(--s3)}
+.admin .admin-main:focus{outline:none}
+
+/* Text links */
+.admin :is(.see-all,.back-link,.eyebrow,.meal-time,.plan-ex-dose,.proj-links a,a.study-item-title:hover){color:var(--link)}
+
+/* ---------- Header (desktop) ---------- */
+.admin .admin-bar{gap:var(--s5);padding-block:var(--s5) var(--s4)}
+.admin .admin-bar nav a{min-height:36px;padding:0 var(--s3);font-size:14.5px;transition:background .15s,color .15s}
+.admin .admin-bar nav a:hover{background:var(--hover);color:var(--ink)}
+.admin .admin-bar nav a[aria-current=page]{background:var(--surface);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line),var(--shadow-sm)}
+.admin .admin-actions .btn .icon{margin-left:-2px}
+
+/* Tablets and small laptops: the section links wrap onto their own row instead of
+   scrolling sideways with items hidden off-screen. */
+@media (min-width:621px) and (max-width:1100px){
+  .admin .admin-bar nav{order:3;flex-basis:100%}
+  .admin .admin-bar nav ul{flex-wrap:wrap;overflow:visible}
+  .admin .admin-actions{margin-left:auto}
+}
+
+/* ---------- Buttons ---------- */
+.admin .btn{min-height:var(--h-control);padding:0 var(--s4);border-radius:var(--r-pill);font-size:14.5px;font-weight:600;line-height:1.2;justify-content:center;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);transition:background .15s,border-color .15s,color .15s,box-shadow .15s}
+.admin .btn:hover{transform:none;border-color:var(--line-strong);background:var(--hover)}
+.admin .btn:active:not(:disabled){background:var(--pressed)}
+.admin .btn.primary{background:var(--primary);border-color:var(--primary);color:var(--primary-ink)}
+.admin .btn.primary:hover{background:var(--primary-hover);border-color:var(--primary-hover)}
+.admin .btn.danger{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 45%,var(--line))}
+.admin .btn.danger:hover{background:var(--danger-soft);border-color:var(--danger)}
+.admin .btn.small{min-height:var(--h-control-sm);padding:0 var(--s3);font-size:13.5px}
+.admin .btn.big-btn{min-height:48px;padding:0 var(--s6);font-size:var(--fs-base)}
+.admin .btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.admin .btn[aria-busy="true"]{opacity:.75;cursor:progress}
+.admin .text-btn{min-height:32px;padding:var(--s1) var(--s1);border-radius:var(--r-sm);color:var(--link);font-size:14px;font-weight:600;text-underline-offset:3px}
+.admin .text-btn:hover:not(:disabled){text-decoration:underline}
+.admin .text-btn:disabled{opacity:.5;cursor:not-allowed}
+.admin .text-btn.danger{color:var(--danger)}
+.admin .icon-btn{min-width:36px;min-height:36px;border-radius:var(--r-sm);display:inline-grid;place-items:center}
+.admin .icon-btn:hover{color:var(--danger);background:var(--danger-soft)}
+
+/* ---------- Form controls ---------- */
+.admin .form label{color:var(--ink);font-size:14px;font-weight:500;gap:var(--s2)}
+.admin .form label .opt,.admin .opt{font-weight:400;color:var(--muted)}
+/* "body .admin el" (0,1,2) beats the older per-form rules like ".form input" (0,1,1). */
+body .admin input:where(:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range])),
+body .admin select,body .admin textarea{
+  font:inherit;font-size:16px;color:var(--ink);background-color:var(--bg);
+  border:1.5px solid var(--line);border-radius:var(--r-md);
+  min-height:var(--h-control);padding:9px 12px;width:100%;min-width:0;
+  transition:border-color .15s,box-shadow .15s,background .15s}
+body .admin .set-grid input{padding:7px 8px}
+body .admin .inline-form input{width:auto;flex:1}
+body .admin :is(input,select,textarea):hover:not(:disabled):not(:focus){border-color:var(--line-strong)}
+body .admin :is(input,select,textarea):focus{outline:none;border-color:var(--accent);box-shadow:var(--focus-ring);background-color:var(--surface)}
+body .admin :is(input,select,textarea):disabled{opacity:.6;cursor:not-allowed}
+body .admin :is(input,select,textarea)[aria-invalid="true"]{border-color:var(--danger)}
+.admin :is(input,textarea)::placeholder{color:color-mix(in srgb,var(--muted) 80%,transparent)}
+body .admin textarea{min-height:96px;resize:vertical;line-height:1.5}
+body .admin select{appearance:none;-webkit-appearance:none;padding-right:36px;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5l5-5' fill='none' stroke='%238A8FA0' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 13px center}
+.admin input[type=checkbox],.admin input[type=radio]{accent-color:var(--accent);width:18px;height:18px}
+.admin .form-foot{gap:var(--s3)}
+
+/* Status lines under forms: colour plus a symbol, so it isn't colour alone. */
+.admin .form-status{color:var(--success);font-weight:500}
+.admin .form-status::before{content:"\2713\00a0"}
+.admin .form-status.err{color:var(--danger)}
+.admin .form-status.err::before{content:"!\00a0";font-weight:800}
+
+/* ---------- Selection controls: one rule for "selected" everywhere ---------- */
+.admin .seg{border:1.5px solid var(--line);background:var(--surface)}
+.admin .seg-btn{min-height:34px;padding:0 var(--s3);font-size:13.5px;transition:background .15s,color .15s}
+.admin .seg-btn:hover:not(.on){color:var(--ink);background:var(--hover)}
+.admin .seg-btn.on{background:var(--primary);color:var(--primary-ink)}
+.admin .seg-btn:focus-visible{outline-offset:-3px}
+/* Prayer statuses keep their meaning colours. */
+.admin .seg-btn.on.ontime{background:var(--accent);color:var(--accent-ink)}
+.admin .seg-btn.on.late{background:var(--warn);color:#1A1C23}
+.admin .seg-btn.on.missed{background:var(--danger);color:#fff}
+.admin .chip-btn{min-height:34px;padding:0 var(--s3);transition:background .15s,border-color .15s,color .15s}
+.admin .chip-btn:hover:not(.on){border-color:var(--line-strong);color:var(--ink)}
+.admin .chip-btn.on{background:var(--primary);border-color:var(--primary);color:var(--primary-ink)}
+.admin .view-switch{box-shadow:var(--shadow-sm)}
+.admin .view-switch button{min-height:40px;transition:background .15s,color .15s}
+.admin .view-switch button.on{background:var(--primary);color:var(--primary-ink)}
+.admin .day-chip:hover:not(.on){border-color:var(--line-strong)}
+.admin .food-week.on{background:var(--accent-soft)}
+
+/* ---------- Checkboxes (to-dos, study items) ---------- */
+.admin :is(.check,.study-check){width:28px;height:28px;border-radius:var(--r-sm);border:2px solid var(--line-strong);background:var(--surface);color:var(--accent-ink);transition:background .15s,border-color .15s}
+.admin :is(.check,.study-check):hover{border-color:var(--accent)}
+.admin .check[aria-pressed=true],.admin .status-done .study-check{background:var(--accent);border-color:var(--accent)}
+
+/* ---------- Status colours (replace hard-coded reds and greens) ---------- */
+.admin .due.late{color:var(--danger);background:var(--danger-soft)}
+.admin .trend.down{color:var(--danger)}
+.admin .dot.missed{background:var(--danger)}
+.admin .day-chip-dot.done{background:var(--success)}
+.admin .study-module.complete .study-module-title::after{color:var(--success)}
+.admin .badge{font-size:var(--fs-xs)}
+.admin .badge.warn{background:var(--warn-soft);color:var(--ink)}
+.admin .badge.success{background:var(--success-soft);color:var(--success)}
+.admin .chip-mini.diff-easy{background:var(--success-soft);color:var(--success)}
+.admin .chip-mini.diff-medium{background:var(--warn-soft);color:var(--warn-ink)}
+.admin .chip-mini.diff-hard{background:var(--danger-soft);color:var(--danger)}
+.admin .accent-green{--course:var(--success)}
+.admin .quiz-option.answer{border-color:var(--success);background:var(--success-soft)}
+.admin .quiz-option.answer .quiz-key{background:var(--success)}
+.admin .quiz-option.missed{border-color:var(--danger);background:var(--danger-soft)}
+.admin .quiz-option.missed .quiz-key{background:var(--danger)}
+.admin .quiz-questions li.right .quiz-stem::after{color:var(--success)}
+.admin .quiz-questions li.wrong .quiz-stem::after{color:var(--danger)}
+.admin .quiz-correct{color:var(--success)}
+.admin .quiz-result.pass{background:var(--success-soft)}
+.admin .quiz-result.fail{background:var(--warn-soft)}
+.admin .quiz-option{transition:border-color .15s,background .15s}
+
+/* ---------- Disclosure rows (details/summary) ---------- */
+.admin details > summary{border-radius:var(--r-md)}
+.admin .plan-more summary:hover,.admin .study-module-head:hover{background:var(--hover);border-radius:var(--radius)}
+
+/* ---------- Fitness ---------- */
+.admin .export-open{justify-self:start;margin:0}
+/* Today in the day picker: cobalt label plus an underline, not colour alone. */
+.admin .day-chip.today:not(.on){border-color:var(--accent)}
+.admin .day-chip.today .day-chip-d{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px}
+.admin .week-nav{padding:var(--s3) var(--s4)}
+.admin .week-nav .big{font-size:var(--fs-md)}
+@media (max-width:620px){.admin .week-nav .label{display:none}}
+
+/* ---------- Study ---------- */
+/* Grid items must be allowed to shrink, or a long one-line "Next:" title widens the page. */
+.admin .course-list > li{min-width:0}
+.admin .course-card{min-width:0}
+@media (max-width:620px){
+  .admin .study-stats .tile{padding:var(--s3) var(--s3) var(--s4)}
+  .admin .study-stats .label{font-size:10.5px;letter-spacing:.05em}
+}
+
+/* ---------- Today ---------- */
+.admin .dash{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:var(--s6) var(--s5)}
+.admin .dash-col{display:grid;gap:var(--s6);align-content:start;min-width:0}
+.admin .dash-card{gap:var(--s2)}
+.admin .dash-card .see-all{margin-top:var(--s1);text-decoration:none}
+.admin .dash-card .big{font-size:var(--fs-md)}
+.admin .dash-card > .icon{color:var(--accent)}
+.admin .dash-meter{display:grid;gap:6px;margin-top:var(--s1)}
+
+/* Prayers on the Today page: status buttons stay beside each prayer, even on phones. */
+.admin .prayers-compact .prayer{flex-wrap:nowrap;align-items:center}
+.admin .prayers-compact .prayer-name{min-width:0}
+@media (max-width:620px){
+  .admin .prayers-compact .seg{width:auto;flex:none}
+  .admin .prayers-compact .seg-btn{flex:none;padding:0 9px;font-size:12.5px}
+}
+
+/* ---------- Login ---------- */
+.admin.login-wrap{padding-block:var(--s8)}
+.admin .login-card{width:min(400px,100%);padding:var(--s8);gap:var(--s2);box-shadow:var(--shadow-md);border-color:transparent}
+.admin .login-card .mark{margin:0 0 var(--s4)}
+.admin .login-card .page-title.small-title{margin:0}
+.admin .login-form{margin-top:var(--s4)}
+.admin .login-form .btn{width:100%;min-height:46px}
+
+/* ---------- Mobile tab bar and "More" sheet ---------- */
+.tabbar,.sheet,.sheet-backdrop{display:none}
+@media (max-width:620px){
+  .admin .admin-bar{padding-block:var(--s3) var(--s2)}
+  .admin .admin-bar nav,.admin .admin-actions{display:none}
+  .admin .admin-main{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+  .admin .page-intro{margin-bottom:var(--s5)}
+  .admin .tile{border-radius:var(--r-lg)}
+
+  .tabbar{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:fixed;left:0;right:0;bottom:0;z-index:40;
+    padding:6px 6px calc(6px + env(safe-area-inset-bottom));background:color-mix(in srgb,var(--surface) 94%,transparent);
+    -webkit-backdrop-filter:saturate(1.4) blur(12px);backdrop-filter:saturate(1.4) blur(12px);border-top:1px solid var(--line)}
+  .tab{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;border-radius:var(--r-md);
+    font:inherit;font-size:11.5px;font-weight:600;letter-spacing:.01em;color:var(--muted);text-decoration:none;background:none;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .tab .icon{width:22px;height:22px}
+  .tab[aria-current=page],.tab[aria-expanded=true]{color:var(--accent)}
+  .tab[aria-current=page]::before{content:"";position:absolute;top:-6px;width:28px;height:3px;border-radius:0 0 3px 3px;background:var(--accent)}
+  .tab:active{background:var(--hover)}
+  .tab:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+  .tab .tab-badge{position:absolute;top:6px;left:calc(50% + 6px);min-width:16px;height:16px;padding:0 4px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:10px;font-weight:700;display:grid;place-items:center}
+  .tab .spinner{position:absolute;top:6px;right:calc(50% - 22px);width:10px;height:10px;border-width:1.5px}
+
+  .sheet-backdrop{display:block;position:fixed;inset:0;z-index:60;background:rgb(10 12 18/.45);opacity:0;pointer-events:none;transition:opacity .2s}
+  .sheet-backdrop.open{opacity:1;pointer-events:auto}
+  .sheet{display:block;position:fixed;left:0;right:0;bottom:0;z-index:61;background:var(--surface);border-radius:20px 20px 0 0;
+    padding:var(--s2) var(--s4) calc(var(--s4) + env(safe-area-inset-bottom));box-shadow:var(--shadow-lg);
+    transform:translateY(100%);visibility:hidden;transition:transform .25s cubic-bezier(.2,.8,.2,1),visibility 0s linear .25s;max-height:85vh;overflow-y:auto}
+  .sheet.open{transform:none;visibility:visible;transition:transform .25s cubic-bezier(.2,.8,.2,1),visibility 0s}
+  .sheet-grip{width:40px;height:4px;border-radius:4px;background:var(--line);margin:4px auto var(--s3)}
+  .sheet-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--s2)}
+  .sheet-head h2{margin:0;font-family:var(--display);font-size:var(--fs-lg);letter-spacing:-.01em}
+  .sheet-close{width:44px;height:44px;margin-right:-10px;border:0;background:none;border-radius:var(--r-md);color:var(--ink);cursor:pointer;display:grid;place-items:center}
+  .sheet-list{list-style:none;margin:0;padding:0;display:grid}
+  .sheet-link{display:flex;align-items:center;gap:var(--s3);min-height:52px;padding:0 var(--s2);border-radius:var(--r-md);text-decoration:none;color:var(--ink);font:inherit;font-size:16px;font-weight:600;width:100%;background:none;border:0;cursor:pointer;text-align:left}
+  .sheet-link .icon{color:var(--muted)}
+  .sheet-link:hover,.sheet-link:active{background:var(--hover)}
+  .sheet-link[aria-current=page]{color:var(--accent)}
+  .sheet-link[aria-current=page] .icon{color:var(--accent)}
+  .sheet-link .nav-count{margin-left:auto}
+  .sheet-link > .spinner{margin-left:auto}
+  .sheet-sep{height:1px;background:var(--line);margin:var(--s2) 0}
+
+  .admin .dash{grid-template-columns:1fr;gap:var(--s5)}
+  .admin .dash-col{gap:var(--s5)}
+  .admin .login-card{padding:var(--s6)}
+  .admin .view-switch{position:static}
+  /* Sticky bars sit above the tab bar instead of underneath it. */
+  .admin .quiz-foot{bottom:calc(64px + env(safe-area-inset-bottom))}
+}
+
+/* Bigger hit areas on touch screens. */
+@media (pointer:coarse){
+  .admin .btn{min-height:44px}
+  .admin .btn.small{min-height:40px}
+  .admin .text-btn{min-height:40px;padding-inline:var(--s2)}
+  .admin .seg-btn,.admin .chip-btn{min-height:40px}
+  .admin :is(.check,.study-check){width:32px;height:32px}
+}
+
+@media (prefers-reduced-motion: reduce){
+  .sheet,.sheet.open,.sheet-backdrop{transition:none}
+  .admin *{scroll-behavior:auto}
+}
+.admin section.dash-col{gap:var(--s3)}
+.admin section.dash-col > .section-title{margin:0}

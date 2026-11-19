@@ -150,7 +150,7 @@ export default function ExportPanel() {
             {busy === "share" && <Spinner />} Share
           </button>
         )}
-        {msg.text && <p className={`form-status${msg.error ? " err" : ""}`}>{msg.text}</p>}
+        {msg.text && <p role="status" className={`form-status${msg.error ? " err" : ""}`}>{msg.text}</p>}
       </div>
     </div>
   );

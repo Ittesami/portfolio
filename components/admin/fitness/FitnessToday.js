@@ -25,13 +25,13 @@ export default function FitnessToday() {
 
   const { loading, day, logged, error } = state;
   return (
-    <LoadingLink className="tile link-tile fitness-today" href="/admin/fitness">
+    <LoadingLink className="tile link-tile dash-card fitness-today" href="/admin/fitness">
       <Icon name="target" />
       <p className="label">Fitness today</p>
       {loading ? (
-        <span className="spinner" aria-label="Loading" />
+        <span className="spinner" role="status" aria-label="Loading" />
       ) : error ? (
-        <p className="form-status err">{error}</p>
+        <p role="status" className="form-status err">{error}</p>
       ) : !day ? (
         <p className="muted">No plan for this week yet. Open Fitness to get one.</p>
       ) : day.rest ? (

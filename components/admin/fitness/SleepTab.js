@@ -105,7 +105,7 @@ function SessionForm({ initial, submitLabel, onSubmit, onCancel }) {
         <button className="btn" type="button" onClick={onCancel}>
           Cancel
         </button>
-        {state.error && <p className="form-status err">{state.error}</p>}
+        {state.error && <p role="status" className="form-status err">{state.error}</p>}
       </div>
     </form>
   );
@@ -183,7 +183,7 @@ function NowCard({ open, justWoke, onStart, onWake, onCancelOpen, onRate, onAddP
             </button>
           </div>
         )}
-        {error && <p className="form-status err">{error}</p>}
+        {error && <p role="status" className="form-status err">{error}</p>}
       </div>
     );
   }
@@ -220,7 +220,7 @@ function NowCard({ open, justWoke, onStart, onWake, onCancelOpen, onRate, onAddP
           + Add a past sleep
         </button>
       </div>
-      {error && <p className="form-status err">{error}</p>}
+      {error && <p role="status" className="form-status err">{error}</p>}
     </div>
   );
 }
@@ -294,7 +294,7 @@ function SessionRow({ s, onSaved, onDeleted }) {
           </>
         )}
       </span>
-      {error && <p className="form-status err">{error}</p>}
+      {error && <p role="status" className="form-status err">{error}</p>}
     </li>
   );
 }
@@ -318,7 +318,7 @@ export default function SleepTab() {
       .catch((err) => setError(err.message));
   }, []);
 
-  if (error) return <p className="form-status err">{error}</p>;
+  if (error) return <p role="status" className="form-status err">{error}</p>;
   if (!sessions || !today)
     return (
       <div className="inline-loading" role="status" aria-label="Loading sleep">

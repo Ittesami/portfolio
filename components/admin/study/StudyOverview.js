@@ -72,7 +72,7 @@ function NewCourse({ onCancel }) {
         <button className="btn" type="button" onClick={onCancel}>
           Cancel
         </button>
-        {state.error && <p className="form-status err">{state.error}</p>}
+        {state.error && <p role="status" className="form-status err">{state.error}</p>}
       </div>
     </form>
   );
@@ -89,7 +89,7 @@ export default function StudyOverview() {
       .catch((err) => setError(err.message));
   }, []);
 
-  if (error) return <p className="form-status err">{error}</p>;
+  if (error) return <p role="status" className="form-status err">{error}</p>;
   if (!data)
     return (
       <div className="inline-loading" role="status" aria-label="Loading courses">

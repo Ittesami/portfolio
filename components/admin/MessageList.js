@@ -102,7 +102,7 @@ function MessageRow({ msg, onChanged, onDeleted }) {
             Delete
           </button>
         )}
-        {error && <p className="form-status err">{error}</p>}
+        {error && <p role="status" className="form-status err">{error}</p>}
       </div>
     </li>
   );
@@ -119,7 +119,7 @@ export default function MessageList() {
       .catch((err) => setError(err.message));
   }, []);
 
-  if (error) return <p className="form-status err">{error}</p>;
+  if (error) return <p role="status" className="form-status err">{error}</p>;
   if (!messages)
     return (
       <div className="inline-loading" role="status" aria-label="Loading messages">

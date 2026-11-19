@@ -67,7 +67,7 @@ function NewExerciseForm({ initialName, categories, equipment, onCreated, onCanc
         <button className="btn" type="button" onClick={onCancel}>
           Cancel
         </button>
-        {state.error && <p className="form-status err">{state.error}</p>}
+        {state.error && <p role="status" className="form-status err">{state.error}</p>}
       </div>
     </form>
   );

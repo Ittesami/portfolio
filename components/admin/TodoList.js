@@ -106,7 +106,7 @@ function TodoForm({ initial, submitLabel, busyLabel, onSubmit, onCancel, compact
             Cancel
           </button>
         )}
-        {state.error && <p className="form-status err">{state.error}</p>}
+        {state.error && <p role="status" className="form-status err">{state.error}</p>}
       </div>
     </form>
   );
@@ -177,7 +177,7 @@ function TodoItem({ todo, today, onChange, onRemove }) {
         <p className="todo-title">{todo.title}</p>
         {todo.notes && <p className="todo-notes">{todo.notes}</p>}
         {due && <span className={`due${due.late ? " late" : ""}`}>{due.late ? `Overdue · ${due.label}` : due.label}</span>}
-        {error && <p className="form-status err">{error}</p>}
+        {error && <p role="status" className="form-status err">{error}</p>}
       </div>
       <div className="todo-actions">
         {confirmDelete ? (
@@ -260,7 +260,7 @@ export default function TodoList({ compact = false }) {
         </div>
       )}
 
-      {error && <p className="form-status err">{error}</p>}
+      {error && <p role="status" className="form-status err">{error}</p>}
       {todos === null && !error && (
         <div className="inline-loading" role="status" aria-label="Loading tasks">
           <span className="spinner" />

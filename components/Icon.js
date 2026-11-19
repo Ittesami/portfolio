@@ -59,6 +59,20 @@ const PATHS = {
       <circle cx="12" cy="12" r="1.2" />
     </>
   ),
+  // Daily (admin) navigation
+  home: <path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1z" />,
+  list: <path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01" />,
+  moon: <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" />,
+  dumbbell: <path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11" />,
+  more: (
+    <>
+      <circle cx="5.5" cy="12" r="1.3" />
+      <circle cx="12" cy="12" r="1.3" />
+      <circle cx="18.5" cy="12" r="1.3" />
+    </>
+  ),
+  external: <path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />,
+  logout: <path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4M10 16l-4-4 4-4M6 12h10" />,
 };
 
 export default function Icon({ name, size = 20 }) {

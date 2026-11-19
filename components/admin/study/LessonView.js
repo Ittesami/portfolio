@@ -66,7 +66,7 @@ export default function LessonView({ slug, itemId }) {
     return (
       <>
         {back}
-        <p className="form-status err">{error}</p>
+        <p role="status" className="form-status err">{error}</p>
       </>
     );
   if (!data)
@@ -77,7 +77,8 @@ export default function LessonView({ slug, itemId }) {
     );
 
   const done = data.progress?.status === "done";
-  const practice = data.module.items.filter((i) => i.type !== "lesson");
+  const practice = data.module.items.filter((i) => i.type !== "lesson" && i.id !== itemId);
+  const hasPractice = practice.some((i) => i.type === "problem" || i.type === "practice");
 
   return (
     <article className={`lesson accent-${data.course.accent}`}>
@@ -88,7 +89,7 @@ export default function LessonView({ slug, itemId }) {
       </p>
       <h1 className="page-title small-title lesson-title">{data.item.title}</h1>
       <div className="lesson-status">
-        <span className={`badge ${done ? "accent" : ""}`}>{done ? "Done" : data.progress?.status === "doing" ? "In progress" : "Not started"}</span>
+        <span className={`badge ${done ? "success" : ""}`}>{done ? "Done" : data.progress?.status === "doing" ? "In progress" : "Not started"}</span>
       </div>
 
       {data.content ? (
@@ -129,15 +130,34 @@ export default function LessonView({ slug, itemId }) {
             </button>
           </div>
         </form>
-        {msg.text && <p className={`form-status${msg.error ? " err" : ""}`}>{msg.text}</p>}
+        {msg.text && <p role="status" className={`form-status${msg.error ? " err" : ""}`}>{msg.text}</p>}
       </div>
 
       {practice.length > 0 && (
         <section className="tile lesson-practice">
-          <p className="label">Practise this module</p>
+          <p className="label">{hasPractice ? "Practise this module" : "Also in this module"}</p>
           <ul className="study-items">
             {practice.map((p) => {
               const pDone = p.status === "done";
+              // Quizzes are taken on the course page, which opens straight to this one.
+              if (p.type === "practice") {
+                return (
+                  <li key={p.id} className={`study-item status-${p.status}`}>
+                    <div className="study-item-main">
+                      <span className="study-check" aria-hidden="true">
+                        {pDone ? "✓" : ""}
+                      </span>
+                      <div className="study-item-text">
+                        <span className="study-item-title">{p.title}</span>
+                        <span className="muted small">{pDone ? "Passed. Retake any time." : "Score 80% or more to tick it off."}</span>
+                      </div>
+                      <LoadingLink className="btn small primary" href={`/admin/study/${slug}?quiz=${encodeURIComponent(p.id)}`}>
+                        {pDone ? "Retake" : "Start quiz"}
+                      </LoadingLink>
+                    </div>
+                  </li>
+                );
+              }
               return (
                 <li key={p.id} className={`study-item status-${p.status}`}>
                   <div className="study-item-main">
@@ -171,7 +191,7 @@ export default function LessonView({ slug, itemId }) {
               );
             })}
           </ul>
-          <p className="muted small">Add notes, scores or mark problems in progress from the course page.</p>
+          <p className="muted small">Add notes or scores, or mark items in progress, from the course page.</p>
         </section>
       )}
 
