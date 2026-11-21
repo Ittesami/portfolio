@@ -9,6 +9,7 @@
 //   exercises, workouts, bodyweights, fitnessPlans - fitness tracker (built-in exercises added if missing)
 //   meals, sleepSessions - food and sleep logs
 //   studyCourses, studyProgress, quizAttempts - Study tab (built-in courses added on first load)
+//   teachStudents, teachClasses, teachSessions - Teaching tab (only recorded classes are stored)
 // Usage: put the real password in .env.local, then `npm run seed`. Safe to re-run.
 import { MongoClient } from "mongodb";
 import { profile } from "../lib/profile-data.js";
@@ -26,7 +27,7 @@ try {
   const db = client.db(process.env.MONGODB_DB || "portfolio");
 
   const existing = new Set((await db.listCollections({}, { nameOnly: true }).toArray()).map((c) => c.name));
-  for (const name of ["profile", "messages", "photos", "todos", "prayers", "settings", "exercises", "workouts", "bodyweights", "fitnessPlans", "albums", "meals", "sleepSessions", "studyCourses", "studyProgress", "quizAttempts"]) {
+  for (const name of ["profile", "messages", "photos", "todos", "prayers", "settings", "exercises", "workouts", "bodyweights", "fitnessPlans", "albums", "meals", "sleepSessions", "studyCourses", "studyProgress", "quizAttempts", "teachStudents", "teachClasses", "teachSessions"]) {
     if (!existing.has(name)) await db.createCollection(name);
   }
 
@@ -37,6 +38,8 @@ try {
   await db.collection("meals").createIndex({ date: 1, time: 1 });
   await db.collection("studyProgress").createIndex({ course: 1 });
   await db.collection("quizAttempts").createIndex({ course: 1, item: 1, at: -1 });
+  await db.collection("teachSessions").createIndex({ date: 1 });
+  await db.collection("teachSessions").createIndex({ classId: 1 });
   // ensureExerciseLibrary: adds built-in exercises that are missing, never overwrites yours
   await db.collection("exercises").bulkWrite(
     EXERCISES.map((e) => ({

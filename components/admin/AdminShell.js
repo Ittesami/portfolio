@@ -13,6 +13,7 @@ const NAV = [
   { href: "/admin/prayers", label: "Prayers", icon: "moon" },
   { href: "/admin/fitness", label: "Fitness", icon: "dumbbell" },
   { href: "/admin/study", label: "Study", icon: "book" },
+  { href: "/admin/teaching", label: "Teaching", icon: "cap" },
   { href: "/admin/travel", label: "Travel", icon: "globe" },
   { href: "/admin/photos", label: "Photos", icon: "camera" },
   { href: "/admin/messages", label: "Messages", icon: "mail" },

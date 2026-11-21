@@ -3,10 +3,11 @@ import PrayerTracker from "@/components/admin/PrayerTracker";
 import FitnessToday from "@/components/admin/fitness/FitnessToday";
 import StudyToday from "@/components/admin/study/StudyToday";
 import TodayDate from "@/components/admin/TodayDate";
+import TeachingToday from "@/components/admin/teaching/TeachingToday";
 
 export const metadata = { title: "Today · Daily" };
 
-// Ordered by how time-sensitive things are: prayers, then what's due, then training and study.
+// Ordered by how time-sensitive things are: prayers, then what's due, then classes, training and study.
 export default function TodayPage() {
   return (
     <>
@@ -36,8 +37,9 @@ export default function TodayPage() {
           </section>
           <section aria-labelledby="today-next" className="dash-col">
             <h2 id="today-next" className="section-title">
-              Training and study
+              Classes, training and study
             </h2>
+            <TeachingToday />
             <FitnessToday />
             <StudyToday />
           </section>
