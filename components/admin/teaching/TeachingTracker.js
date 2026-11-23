@@ -5,7 +5,7 @@ import { api, prettyDate, shiftDate, todayStr } from "../api";
 import Spinner from "../Spinner";
 import ClassForm from "./ClassForm";
 import SessionRow from "./SessionRow";
-import { classStudents, classTitle, endOfNextMonth, hours, isUnmarked, mondayOf, nowStampLocal, shortDate, slotText, studentsById } from "./shared";
+import { WEEKDAYS_LONG, classStudents, classTitle, endOfNextMonth, hours, isUnmarked, mondayOf, nowStampLocal, shortDate, slotText, studentsById } from "./shared";
 
 const VIEW_KEY = "teaching-view";
 const VIEWS = [
@@ -34,7 +34,7 @@ function ExtraForm({ classes, byId, defaultDate, onAdded, onCancel }) {
         }
       }}
     >
-      <p className="label">Extra class</p>
+      <p className="label">One-off class</p>
       <label>
         Class
         <select value={form.classId} onChange={set("classId")} required>
@@ -166,7 +166,7 @@ function WeekView({ data, week, setWeek, today, onSessions, reload, goTo }) {
         <h2 className="section-title">Timetable</h2>
         {!adding && (
           <button type="button" className="btn small" onClick={() => setAdding(true)}>
-            + Extra class
+            + One-off class
           </button>
         )}
       </div>
@@ -296,7 +296,7 @@ function StudentCard({ student, classes, history, onSaved, onDeleted }) {
 
   if (editing) {
     return (
-      <li className="tile">
+      <li className="tile editing">
         <StudentForm
           initial={{ name: student.name, level: student.level, notes: student.notes }}
           submitLabel="Save"
@@ -493,8 +493,10 @@ function ClassCard({ cls, students, byId, today, onSaved, onDeleted }) {
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
   const url = `/api/admin/teaching/classes/${cls.id}`;
-  const ended = cls.endDate < today;
-  const endingSoon = !ended && cls.endDate <= shiftDate(today, 14);
+  const ended = Boolean(cls.endDate) && cls.endDate < today;
+  const endingSoon = Boolean(cls.endDate) && !ended && cls.endDate <= shiftDate(today, 14);
+  const current = slotsOn(cls, today);
+  const upcoming = cls.schedule.filter((e) => e.from > today);
   const put = async (body) => {
     const { class: next } = await api(url, { method: "PUT", body });
     onSaved(next);
@@ -502,10 +504,12 @@ function ClassCard({ cls, students, byId, today, onSaved, onDeleted }) {
 
   if (editing) {
     return (
-      <li className="tile">
+      <li className="tile editing">
         <ClassForm
-          initial={{ title: cls.title, subject: cls.subject, studentIds: cls.studentIds, slots: cls.slots, startDate: cls.startDate, endDate: cls.endDate, notes: cls.notes }}
+          initial={{ title: cls.title, subject: cls.subject, studentIds: cls.studentIds, slots: cls.slots, startDate: cls.startDate, endDate: cls.endDate, notes: cls.notes, defaultEnd: endOfNextMonth(today) }}
           students={students}
+          today={today}
+          editing
           submitLabel="Save class"
           onCancel={() => setEditing(false)}
           onSubmit={async (form) => {
@@ -525,12 +529,17 @@ function ClassCard({ cls, students, byId, today, onSaved, onDeleted }) {
       </div>
       <p className="muted small">{[cls.subject, cls.title ? classStudents(cls, byId) : ""].filter(Boolean).join(" · ") || "No students"}</p>
       <ul className="slot-chips">
-        {cls.slots.map((s) => (
+        {current.map((s) => (
           <li key={`${s.weekday}-${s.time}`}>{slotText(s)}</li>
         ))}
       </ul>
+      {upcoming.map((e) => (
+        <p key={e.from} className="small">
+          <span className="badge accent">From {shortDate(e.from)}</span> {e.slots.map(slotText).join(", ")}
+        </p>
+      ))}
       <p className="small">
-        {shortDate(cls.startDate)} – {shortDate(cls.endDate)}
+        {cls.endDate ? `${shortDate(cls.startDate)} – ${shortDate(cls.endDate)}` : `${cls.startDate > today ? "Starts" : "Since"} ${shortDate(cls.startDate)} · until you change it`}
       </p>
       {cls.notes && <p className="muted small">{cls.notes}</p>}
       <div className="form-foot">
@@ -555,6 +564,25 @@ function ClassCard({ cls, students, byId, today, onSaved, onDeleted }) {
             }}
           >
             {busy === "extend" && <Spinner />} Extend to end of next month
+          </button>
+        )}
+        {(ended || endingSoon) && (
+          <button
+            type="button"
+            className="text-btn"
+            disabled={Boolean(busy)}
+            onClick={async () => {
+              setBusy("ongoing");
+              setError("");
+              try {
+                await put({ ...cls, endDate: null });
+              } catch (err) {
+                setError(err.message);
+              }
+              setBusy("");
+            }}
+          >
+            {busy === "ongoing" && <Spinner />} Keep it going
           </button>
         )}
         {confirm ? (
@@ -595,11 +623,72 @@ function ClassCard({ cls, students, byId, today, onSaved, onDeleted }) {
   );
 }
 
+// The days and times a class runs on a date (its schedule entry for that date). A class that
+// hasn't started yet shows its first schedule.
+function slotsOn(cls, date) {
+  let slots = cls.schedule[0].slots;
+  for (const e of cls.schedule) if (e.from <= date) slots = e.slots;
+  return slots;
+}
+
+const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0];
+
+// Your regular week at a glance: every running class, by weekday and time.
+function WeeklyTimetable({ classes, byId, today }) {
+  const rows = WEEK_ORDER.map((wd) => ({
+    wd,
+    items: classes
+      .flatMap((c) => slotsOn(c, today).filter((s) => s.weekday === wd).map((s) => ({ c, s })))
+      .sort((a, b) => a.s.time.localeCompare(b.s.time)),
+  }));
+  const total = rows.reduce((a, r) => a + r.items.length, 0);
+  const minutes = rows.reduce((a, r) => a + r.items.reduce((m, i) => m + i.s.minutes, 0), 0);
+  const end = (time, mins) => {
+    const [h, m] = time.split(":").map(Number);
+    const t = h * 60 + m + mins;
+    return `${String(Math.floor(t / 60) % 24).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
+  };
+  return (
+    <section className="tile week-table" aria-labelledby="week-table-title">
+      <div className="row">
+        <h2 id="week-table-title" className="section-title">
+          Regular week
+        </h2>
+        <p className="muted small">
+          {total} class{total === 1 ? "" : "es"} · {hours(minutes)}
+        </p>
+      </div>
+      <ul className="week-rows">
+        {rows.map(({ wd, items }) => (
+          <li key={wd} className={items.length ? "" : "free"}>
+            <span className="week-day">{WEEKDAYS_LONG[wd]}</span>
+            {items.length ? (
+              <ul className="week-items">
+                {items.map(({ c, s }) => (
+                  <li key={`${c.id}-${s.time}`}>
+                    <span className="week-time">
+                      {s.time}–{end(s.time, s.minutes)}
+                    </span>{" "}
+                    <strong>{classTitle(c, byId)}</strong>
+                    {c.subject && <span className="muted"> · {c.subject}</span>}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <span className="muted small">Free</span>
+            )}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 function ClassesView({ data, setData, today, goTo }) {
   const [adding, setAdding] = useState(false);
   const byId = studentsById(data.students);
-  const active = data.classes.filter((c) => c.endDate >= today);
-  const ended = data.classes.filter((c) => c.endDate < today);
+  const active = data.classes.filter((c) => !c.endDate || c.endDate >= today);
+  const ended = data.classes.filter((c) => c.endDate && c.endDate < today);
   const card = (c) => (
     <ClassCard
       key={`${c.id}:${JSON.stringify(c)}`}
@@ -626,8 +715,9 @@ function ClassesView({ data, setData, today, goTo }) {
       {adding && (
         <div className="tile">
           <ClassForm
-            initial={{ title: "", subject: "", studentIds: [], slots: [{ weekday: new Date(`${today}T12:00:00`).getDay(), time: "17:00", minutes: 60 }], startDate: today, endDate: endOfNextMonth(today), notes: "" }}
+            initial={{ title: "", subject: "", studentIds: [], slots: [{ weekday: new Date(`${today}T12:00:00`).getDay(), time: "17:00", minutes: 60 }], startDate: today, endDate: null, defaultEnd: endOfNextMonth(today), notes: "" }}
             students={data.students}
+            today={today}
             submitLabel="Add class"
             onCancel={() => setAdding(false)}
             onSubmit={async (form) => {
@@ -639,6 +729,7 @@ function ClassesView({ data, setData, today, goTo }) {
         </div>
       )}
       {data.classes.length === 0 && !adding && <p className="empty">No classes yet.</p>}
+      {active.length > 0 && <WeeklyTimetable classes={active} byId={byId} today={today} />}
       {active.length > 0 && <ul className="class-list">{active.map(card)}</ul>}
       {ended.length > 0 && (
         <>

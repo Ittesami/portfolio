@@ -2,17 +2,28 @@
 
 import { useState } from "react";
 import Spinner from "../Spinner";
-import { WEEKDAYS_LONG } from "./shared";
+import { WEEKDAYS_LONG, shortDate } from "./shared";
 
 const LENGTHS = [30, 45, 60, 75, 90, 120];
 
-// Add or edit a class: who, what, which days and times, and from when to when.
-export default function ClassForm({ initial, students, submitLabel, onSubmit, onCancel }) {
-  const [form, setForm] = useState(initial);
+const normal = (slots) =>
+  slots
+    .map((s) => ({ weekday: Number(s.weekday), time: s.time, minutes: Number(s.minutes) }))
+    .sort((a, b) => a.weekday - b.weekday || a.time.localeCompare(b.time));
+
+// Add or edit a class: who, what, which days and times, and how long it runs (until you
+// change it, or until a date). When editing a class that has already started, new days or
+// times apply from a date you pick, so earlier weeks keep their old times.
+export default function ClassForm({ initial, students, today, editing = false, submitLabel, onSubmit, onCancel }) {
+  const [form, setForm] = useState({ ...initial, endDate: initial.endDate ?? "" });
+  const [ongoing, setOngoing] = useState(!initial.endDate);
+  const [changeFrom, setChangeFrom] = useState(today);
   const [state, setState] = useState({ busy: false, error: "" });
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
   const setSlot = (i, k, v) => setForm((f) => ({ ...f, slots: f.slots.map((s, j) => (j === i ? { ...s, [k]: v } : s)) }));
   const choices = students.filter((s) => s.active || form.studentIds.includes(s.id));
+  const timesChanged = editing && JSON.stringify(normal(form.slots)) !== JSON.stringify(normal(initial.slots));
+  const askWhen = timesChanged && initial.startDate < today;
 
   async function submit(e) {
     e.preventDefault();
@@ -20,7 +31,9 @@ export default function ClassForm({ initial, students, submitLabel, onSubmit, on
     try {
       await onSubmit({
         ...form,
-        slots: form.slots.map((s) => ({ weekday: Number(s.weekday), time: s.time, minutes: Number(s.minutes) })),
+        endDate: ongoing ? null : form.endDate,
+        changeFrom: askWhen ? changeFrom : null,
+        slots: normal(form.slots),
       });
     } catch (err) {
       setState({ busy: false, error: err.message });
@@ -104,17 +117,50 @@ export default function ClassForm({ initial, students, submitLabel, onSubmit, on
         >
           + Add another day
         </button>
+        {askWhen && (
+          <div className="change-from">
+            <label>
+              New times start on
+              <input type="date" value={changeFrom} onChange={(e) => setChangeFrom(e.target.value)} min={initial.startDate} required />
+            </label>
+            <p className="muted small">
+              Classes before this date keep their old times. To fix a mistake in every week, pick the class's start date ({shortDate(initial.startDate)}).
+              For a single week, use Reschedule on that class instead.
+            </p>
+          </div>
+        )}
       </fieldset>
 
+      <fieldset className="field-block plain">
+        <legend className="field-label">How long it runs</legend>
+        <div className="seg" role="group" aria-label="How long it runs">
+          <button type="button" className={`seg-btn${ongoing ? " on" : ""}`} aria-pressed={ongoing} onClick={() => setOngoing(true)}>
+            Until I change it
+          </button>
+          <button
+            type="button"
+            className={`seg-btn${ongoing ? "" : " on"}`}
+            aria-pressed={!ongoing}
+            onClick={() => {
+              setOngoing(false);
+              setForm((f) => ({ ...f, endDate: f.endDate || initial.defaultEnd || f.startDate }));
+            }}
+          >
+            Until a date
+          </button>
+        </div>
+      </fieldset>
       <div className="row">
         <label>
-          From
+          {ongoing ? "Starts" : "From"}
           <input type="date" value={form.startDate} onChange={set("startDate")} required />
         </label>
-        <label>
-          Until
-          <input type="date" value={form.endDate} onChange={set("endDate")} min={form.startDate} required />
-        </label>
+        {!ongoing && (
+          <label>
+            Until
+            <input type="date" value={form.endDate} onChange={set("endDate")} min={form.startDate} required />
+          </label>
+        )}
       </div>
       <label>
         <span className="field-label">

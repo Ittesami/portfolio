@@ -360,3 +360,20 @@ body .admin select{appearance:none;-webkit-appearance:none;padding-right:36px;cu
   .admin .history-topic{grid-column:1/-1;padding-bottom:var(--s1)}
   .admin .student-list,.admin .class-list{grid-template-columns:1fr}
 }
+.admin .week-table{gap:var(--s3)}
+.admin .week-table > .row{align-items:center}
+.admin .week-table .section-title{margin:0}
+.admin .week-rows{list-style:none;margin:0;padding:0;display:grid}
+.admin .week-rows > li{display:grid;grid-template-columns:110px minmax(0,1fr);gap:var(--s3);padding:var(--s3) 0;border-top:1px solid var(--line);align-items:baseline}
+.admin .week-rows > li:first-child{border-top:0}
+.admin .week-day{font-weight:700}
+.admin .week-rows > li.free .week-day{color:var(--muted);font-weight:500}
+.admin .week-items{list-style:none;margin:0;padding:0;display:grid;gap:var(--s1)}
+.admin .week-time{font-variant-numeric:tabular-nums;color:var(--muted);display:inline-block;min-width:96px}
+.admin .change-from{display:grid;gap:var(--s1);margin-top:var(--s3);padding:var(--s3);border-radius:var(--r-md);background:var(--accent-soft)}
+.admin .change-from p{margin:0}
+@media (max-width:620px){
+  .admin .week-rows > li{grid-template-columns:1fr;gap:var(--s1)}
+}
+.admin .class-list > li.editing,.admin .student-list > li.editing{grid-column:1/-1}
+.admin .class-form .seg{width:fit-content;max-width:100%}
