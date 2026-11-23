@@ -5,13 +5,12 @@ import { api, prettyDate, shiftDate, todayStr } from "../api";
 import Spinner from "../Spinner";
 import ClassForm from "./ClassForm";
 import SessionRow from "./SessionRow";
-import { WEEKDAYS_LONG, classStudents, classTitle, endOfNextMonth, hours, isUnmarked, mondayOf, nowStampLocal, shortDate, slotText, studentsById } from "./shared";
+import { classTitle, endOfNextMonth, hours, isUnmarked, mondayOf, nowStampLocal, shortDate, slotText, studentsById } from "./shared";
 
 const VIEW_KEY = "teaching-view";
 const VIEWS = [
   ["week", "This week"],
   ["students", "Students"],
-  ["classes", "Classes"],
 ];
 
 // ---------------------------------------------------------------- This week
@@ -104,10 +103,10 @@ function WeekView({ data, week, setWeek, today, onSessions, reload, goTo }) {
     return (
       <div className="tile empty-state">
         <p className="big">No classes yet</p>
-        <p className="muted">Add your students, then a class with its days and times. Every class until its end date appears here automatically.</p>
+        <p className="muted">Add your students, then their days and times on the Students page. Their classes then appear here every week.</p>
         <div className="form-foot">
-          <button type="button" className="btn primary" onClick={() => goTo(data.students.length ? "classes" : "students")}>
-            {data.students.length ? "Add a class" : "Add a student"}
+          <button type="button" className="btn primary" onClick={() => goTo("students")}>
+            {data.students.length ? "Add class times" : "Add a student"}
           </button>
         </div>
       </div>
@@ -271,13 +270,17 @@ function StudentForm({ initial, submitLabel, onSubmit, onCancel }) {
   );
 }
 
-function StudentCard({ student, classes, history, onSaved, onDeleted }) {
+function StudentCard({ student, students, classes, history, today, startAdding = false, onSaved, onDeleted, onClassSaved, onClassAdded, onClassDeleted }) {
   const [editing, setEditing] = useState(false);
+  const [classEdit, setClassEdit] = useState(startAdding ? "new" : null); // null | "new" | class id
   const [open, setOpen] = useState(false);
   const [confirm, setConfirm] = useState(false);
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
   const mine = classes.filter((c) => c.studentIds.includes(student.id));
+  const byId = studentsById(students);
+  const running = mine.filter((c) => !c.endDate || c.endDate >= today);
+  const past = mine.filter((c) => c.endDate && c.endDate < today);
   const done = history.filter((s) => mine.some((c) => c.id === s.classId));
   const n = (st) => done.filter((s) => s.status === st).length;
   const last = [...done].reverse().find((s) => s.status === "attended");
@@ -312,7 +315,7 @@ function StudentCard({ student, classes, history, onSaved, onDeleted }) {
   }
 
   return (
-    <li className={`tile student-card${student.active ? "" : " archived"}`}>
+    <li className={`tile student-card${student.active ? "" : " archived"}${classEdit ? " editing" : ""}`}>
       <div className="row">
         <div>
           <h3 className="student-name">
@@ -330,7 +333,43 @@ function StudentCard({ student, classes, history, onSaved, onDeleted }) {
           <span className="muted">Last taught ({shortDate(last.date)}):</span> {last.topic}
         </p>
       )}
-      <p className="muted small">{mine.length ? mine.map((c) => c.slots.map(slotText).join(", ")).join(" · ") : "Not in any class"}</p>
+      <ul className="student-classes">
+        {[...running, ...past].map((c) => (
+          <ClassCard
+            key={`${c.id}:${JSON.stringify(c)}`}
+            cls={c}
+            student={student}
+            students={students}
+            byId={byId}
+            today={today}
+            editing={classEdit === c.id}
+            setEditing={(on) => setClassEdit(on ? c.id : null)}
+            onSaved={onClassSaved}
+            onDeleted={onClassDeleted}
+          />
+        ))}
+        {classEdit === "new" && (
+          <li className="student-class">
+            <ClassForm
+              initial={{ title: "", subject: student.level, studentIds: [student.id], slots: [{ weekday: new Date(`${today}T12:00:00`).getDay(), time: "17:00", minutes: 60 }], startDate: today, endDate: null, defaultEnd: endOfNextMonth(today), notes: "" }}
+              students={students}
+              today={today}
+              submitLabel="Save times"
+              onCancel={() => setClassEdit(null)}
+              onSubmit={async (form) => {
+                const { class: cls } = await api("/api/admin/teaching/classes", { method: "POST", body: form });
+                onClassAdded(cls);
+                setClassEdit(null);
+              }}
+            />
+          </li>
+        )}
+      </ul>
+      {!classEdit && student.active && running.length === 0 && (
+        <button type="button" className="text-btn add-times" onClick={() => setClassEdit("new")}>
+          + Add days and times
+        </button>
+      )}
       {student.notes && <p className="muted small">{student.notes}</p>}
 
       {open && (
@@ -409,6 +448,7 @@ function StudentCard({ student, classes, history, onSaved, onDeleted }) {
 
 function StudentsView({ data, setData, today }) {
   const [adding, setAdding] = useState(false);
+  const [justAdded, setJustAdded] = useState(null);
   const [history, setHistory] = useState(null);
   const [error, setError] = useState("");
 
@@ -445,6 +485,7 @@ function StudentsView({ data, setData, today }) {
             onSubmit={async (form) => {
               const { student } = await api("/api/admin/teaching/students", { method: "POST", body: form });
               setData((d) => ({ ...d, students: [...d.students, student] }));
+              setJustAdded(student.id);
               setAdding(false);
             }}
           />
@@ -456,7 +497,7 @@ function StudentsView({ data, setData, today }) {
         </p>
       )}
       {students.length === 0 && !adding ? (
-        <p className="empty">No students yet. Add the people you teach.</p>
+        <p className="empty">No students yet. Add the people you teach, then their days and times.</p>
       ) : history === null ? (
         <div className="inline-loading" role="status" aria-label="Loading history">
           <span className="spinner" />
@@ -467,8 +508,14 @@ function StudentsView({ data, setData, today }) {
             <StudentCard
               key={`${s.id}:${s.name}:${s.level}:${s.notes}:${s.active}`}
               student={s}
+              students={students}
               classes={data.classes}
               history={history}
+              today={today}
+              startAdding={s.id === justAdded}
+              onClassSaved={(next) => setData((d) => ({ ...d, classes: d.classes.map((x) => (x.id === next.id ? next : x)) }))}
+              onClassAdded={(cls) => setData((d) => ({ ...d, classes: [...d.classes, cls] }))}
+              onClassDeleted={(id) => setData((d) => ({ ...d, classes: d.classes.filter((x) => x.id !== id) }))}
               onSaved={(next) => setData((d) => ({ ...d, students: d.students.map((x) => (x.id === next.id ? next : x)) }))}
               onDeleted={(id) =>
                 setData((d) => ({
@@ -485,10 +532,7 @@ function StudentsView({ data, setData, today }) {
   );
 }
 
-// ---------------------------------------------------------------- Classes
-
-function ClassCard({ cls, students, byId, today, onSaved, onDeleted }) {
-  const [editing, setEditing] = useState(false);
+function ClassCard({ cls, student, students, byId, today, editing, setEditing, onSaved, onDeleted }) {
   const [confirm, setConfirm] = useState(false);
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
@@ -496,6 +540,7 @@ function ClassCard({ cls, students, byId, today, onSaved, onDeleted }) {
   const ended = Boolean(cls.endDate) && cls.endDate < today;
   const endingSoon = Boolean(cls.endDate) && !ended && cls.endDate <= shiftDate(today, 14);
   const current = slotsOn(cls, today);
+  const others = cls.studentIds.filter((x) => x !== student.id).map((x) => byId[x]?.name ?? "?");
   const upcoming = cls.schedule.filter((e) => e.from > today);
   const put = async (body) => {
     const { class: next } = await api(url, { method: "PUT", body });
@@ -504,7 +549,7 @@ function ClassCard({ cls, students, byId, today, onSaved, onDeleted }) {
 
   if (editing) {
     return (
-      <li className="tile editing">
+      <li className="student-class">
         <ClassForm
           initial={{ title: cls.title, subject: cls.subject, studentIds: cls.studentIds, slots: cls.slots, startDate: cls.startDate, endDate: cls.endDate, notes: cls.notes, defaultEnd: endOfNextMonth(today) }}
           students={students}
@@ -522,12 +567,15 @@ function ClassCard({ cls, students, byId, today, onSaved, onDeleted }) {
   }
 
   return (
-    <li className={`tile class-card${ended ? " ended" : ""}`}>
-      <div className="row">
-        <h3 className="class-name">{classTitle(cls, byId)}</h3>
-        {ended ? <span className="badge">Ended</span> : endingSoon ? <span className="badge warn">Ends {shortDate(cls.endDate)}</span> : null}
-      </div>
-      <p className="muted small">{[cls.subject, cls.title ? classStudents(cls, byId) : ""].filter(Boolean).join(" · ") || "No students"}</p>
+    <li className={`student-class class-card${ended ? " ended" : ""}`}>
+      {(others.length > 0 || cls.title || ended || endingSoon || (cls.subject && cls.subject !== student.level)) && (
+        <div className="row">
+          <p className="small">
+            {[cls.title, cls.subject !== student.level ? cls.subject : "", others.length ? `with ${others.join(" & ")}` : ""].filter(Boolean).join(" · ")}
+          </p>
+          {ended ? <span className="badge">Ended</span> : endingSoon ? <span className="badge warn">Ends {shortDate(cls.endDate)}</span> : null}
+        </div>
+      )}
       <ul className="slot-chips">
         {current.map((s) => (
           <li key={`${s.weekday}-${s.time}`}>{slotText(s)}</li>
@@ -544,7 +592,7 @@ function ClassCard({ cls, students, byId, today, onSaved, onDeleted }) {
       {cls.notes && <p className="muted small">{cls.notes}</p>}
       <div className="form-foot">
         <button type="button" className="text-btn" onClick={() => setEditing(true)}>
-          Edit
+          Change times
         </button>
         {(ended || endingSoon) && (
           <button
@@ -602,7 +650,7 @@ function ClassCard({ cls, students, byId, today, onSaved, onDeleted }) {
                 }
               }}
             >
-              {busy === "delete" && <Spinner />} Delete class and its history
+              {busy === "delete" && <Spinner />} Remove these times and their history
             </button>
             <button type="button" className="text-btn" onClick={() => setConfirm(false)}>
               Keep
@@ -610,7 +658,7 @@ function ClassCard({ cls, students, byId, today, onSaved, onDeleted }) {
           </>
         ) : (
           <button type="button" className="text-btn danger" onClick={() => setConfirm(true)}>
-            Delete
+            Remove
           </button>
         )}
       </div>
@@ -629,116 +677,6 @@ function slotsOn(cls, date) {
   let slots = cls.schedule[0].slots;
   for (const e of cls.schedule) if (e.from <= date) slots = e.slots;
   return slots;
-}
-
-const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0];
-
-// Your regular week at a glance: every running class, by weekday and time.
-function WeeklyTimetable({ classes, byId, today }) {
-  const rows = WEEK_ORDER.map((wd) => ({
-    wd,
-    items: classes
-      .flatMap((c) => slotsOn(c, today).filter((s) => s.weekday === wd).map((s) => ({ c, s })))
-      .sort((a, b) => a.s.time.localeCompare(b.s.time)),
-  }));
-  const total = rows.reduce((a, r) => a + r.items.length, 0);
-  const minutes = rows.reduce((a, r) => a + r.items.reduce((m, i) => m + i.s.minutes, 0), 0);
-  const end = (time, mins) => {
-    const [h, m] = time.split(":").map(Number);
-    const t = h * 60 + m + mins;
-    return `${String(Math.floor(t / 60) % 24).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
-  };
-  return (
-    <section className="tile week-table" aria-labelledby="week-table-title">
-      <div className="row">
-        <h2 id="week-table-title" className="section-title">
-          Regular week
-        </h2>
-        <p className="muted small">
-          {total} class{total === 1 ? "" : "es"} · {hours(minutes)}
-        </p>
-      </div>
-      <ul className="week-rows">
-        {rows.map(({ wd, items }) => (
-          <li key={wd} className={items.length ? "" : "free"}>
-            <span className="week-day">{WEEKDAYS_LONG[wd]}</span>
-            {items.length ? (
-              <ul className="week-items">
-                {items.map(({ c, s }) => (
-                  <li key={`${c.id}-${s.time}`}>
-                    <span className="week-time">
-                      {s.time}–{end(s.time, s.minutes)}
-                    </span>{" "}
-                    <strong>{classTitle(c, byId)}</strong>
-                    {c.subject && <span className="muted"> · {c.subject}</span>}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <span className="muted small">Free</span>
-            )}
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
-function ClassesView({ data, setData, today, goTo }) {
-  const [adding, setAdding] = useState(false);
-  const byId = studentsById(data.students);
-  const active = data.classes.filter((c) => !c.endDate || c.endDate >= today);
-  const ended = data.classes.filter((c) => c.endDate && c.endDate < today);
-  const card = (c) => (
-    <ClassCard
-      key={`${c.id}:${JSON.stringify(c)}`}
-      cls={c}
-      students={data.students}
-      byId={byId}
-      today={today}
-      onSaved={(next) => setData((d) => ({ ...d, classes: d.classes.map((x) => (x.id === next.id ? next : x)) }))}
-      onDeleted={(id) => setData((d) => ({ ...d, classes: d.classes.filter((x) => x.id !== id) }))}
-    />
-  );
-  return (
-    <>
-      <div className="row section-row">
-        <h2 className="section-title">
-          {active.length} running class{active.length === 1 ? "" : "es"}
-        </h2>
-        {!adding && (
-          <button type="button" className="btn small primary" onClick={() => (data.students.length ? setAdding(true) : goTo("students"))}>
-            {data.students.length ? "+ Add class" : "Add a student first"}
-          </button>
-        )}
-      </div>
-      {adding && (
-        <div className="tile">
-          <ClassForm
-            initial={{ title: "", subject: "", studentIds: [], slots: [{ weekday: new Date(`${today}T12:00:00`).getDay(), time: "17:00", minutes: 60 }], startDate: today, endDate: null, defaultEnd: endOfNextMonth(today), notes: "" }}
-            students={data.students}
-            today={today}
-            submitLabel="Add class"
-            onCancel={() => setAdding(false)}
-            onSubmit={async (form) => {
-              const { class: cls } = await api("/api/admin/teaching/classes", { method: "POST", body: form });
-              setData((d) => ({ ...d, classes: [...d.classes, cls] }));
-              setAdding(false);
-            }}
-          />
-        </div>
-      )}
-      {data.classes.length === 0 && !adding && <p className="empty">No classes yet.</p>}
-      {active.length > 0 && <WeeklyTimetable classes={active} byId={byId} today={today} />}
-      {active.length > 0 && <ul className="class-list">{active.map(card)}</ul>}
-      {ended.length > 0 && (
-        <>
-          <h2 className="section-title">Ended</h2>
-          <ul className="class-list">{ended.map(card)}</ul>
-        </>
-      )}
-    </>
-  );
 }
 
 // ---------------------------------------------------------------- Page
@@ -784,7 +722,7 @@ export default function TeachingTracker() {
 
   return (
     <div className="teaching">
-      <div className="view-switch three" role="tablist" aria-label="Teaching view">
+      <div className="view-switch two" role="tablist" aria-label="Teaching view">
         {VIEWS.map(([key, label]) => (
           <button key={key} type="button" role="tab" aria-selected={view === key} className={view === key ? "on" : ""} onClick={() => switchView(key)}>
             {label}
@@ -812,10 +750,8 @@ export default function TeachingTracker() {
           reload={() => load(week)}
           goTo={switchView}
         />
-      ) : view === "students" ? (
-        <StudentsView data={data} setData={setData} today={today} />
       ) : (
-        <ClassesView data={data} setData={setData} today={today} goTo={switchView} />
+        <StudentsView data={data} setData={setData} today={today} />
       )}
     </div>
   );

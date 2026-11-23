@@ -288,7 +288,7 @@ body .admin select{appearance:none;-webkit-appearance:none;padding-right:36px;cu
 /* ---------- Teaching ---------- */
 .admin .teaching{display:grid;gap:var(--s4);min-width:0}
 .admin .teaching > .section-title{margin:var(--s2) 0 0}
-.admin .view-switch.three{grid-template-columns:repeat(3,1fr);max-width:420px}
+.admin .view-switch.two{grid-template-columns:1fr 1fr;max-width:320px}
 .admin .badge.danger{background:var(--danger-soft);color:var(--danger)}
 .admin .form .row.three{grid-template-columns:1.4fr 1fr 1fr}
 .admin .field-block.plain{border:0;padding:0;margin:0;min-width:0}
@@ -360,20 +360,12 @@ body .admin select{appearance:none;-webkit-appearance:none;padding-right:36px;cu
   .admin .history-topic{grid-column:1/-1;padding-bottom:var(--s1)}
   .admin .student-list,.admin .class-list{grid-template-columns:1fr}
 }
-.admin .week-table{gap:var(--s3)}
-.admin .week-table > .row{align-items:center}
-.admin .week-table .section-title{margin:0}
-.admin .week-rows{list-style:none;margin:0;padding:0;display:grid}
-.admin .week-rows > li{display:grid;grid-template-columns:110px minmax(0,1fr);gap:var(--s3);padding:var(--s3) 0;border-top:1px solid var(--line);align-items:baseline}
-.admin .week-rows > li:first-child{border-top:0}
-.admin .week-day{font-weight:700}
-.admin .week-rows > li.free .week-day{color:var(--muted);font-weight:500}
-.admin .week-items{list-style:none;margin:0;padding:0;display:grid;gap:var(--s1)}
-.admin .week-time{font-variant-numeric:tabular-nums;color:var(--muted);display:inline-block;min-width:96px}
 .admin .change-from{display:grid;gap:var(--s1);margin-top:var(--s3);padding:var(--s3);border-radius:var(--r-md);background:var(--accent-soft)}
 .admin .change-from p{margin:0}
-@media (max-width:620px){
-  .admin .week-rows > li{grid-template-columns:1fr;gap:var(--s1)}
-}
-.admin .class-list > li.editing,.admin .student-list > li.editing{grid-column:1/-1}
 .admin .class-form .seg{width:fit-content;max-width:100%}
+
+.admin .student-list > li.editing{grid-column:1/-1}
+.admin .student-classes{list-style:none;margin:0;padding:0;display:grid;gap:var(--s2)}
+.admin .student-class{display:grid;gap:var(--s2);padding-top:var(--s2);border-top:1px solid var(--line)}
+.admin .student-class .form-foot{gap:var(--s3)}
+.admin .add-times{justify-self:start}
