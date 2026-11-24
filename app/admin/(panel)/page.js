@@ -1,13 +1,15 @@
-import TodoList from "@/components/admin/TodoList";
-import PrayerTracker from "@/components/admin/PrayerTracker";
-import FitnessToday from "@/components/admin/fitness/FitnessToday";
+// To-do, Prayers and Fitness moved to the Daily app; their sections are commented out below.
+// import TodoList from "@/components/admin/TodoList";
+// import PrayerTracker from "@/components/admin/PrayerTracker";
+// import FitnessToday from "@/components/admin/fitness/FitnessToday";
 import StudyToday from "@/components/admin/study/StudyToday";
 import TodayDate from "@/components/admin/TodayDate";
 import TeachingToday from "@/components/admin/teaching/TeachingToday";
+import { DAILY_APP_URL } from "@/lib/daily-app";
 
 export const metadata = { title: "Today · Daily" };
 
-// Ordered by how time-sensitive things are: prayers, then what's due, then classes, training and study.
+// Classes, then study. Prayers, to-dos and training are in the Daily app.
 export default function TodayPage() {
   return (
     <>
@@ -18,6 +20,7 @@ export default function TodayPage() {
         </div>
       </div>
       <div className="dash">
+        {/*
         <div className="dash-col">
           <section aria-labelledby="today-prayers">
             <h2 id="today-prayers" className="section-title">
@@ -26,7 +29,9 @@ export default function TodayPage() {
             <PrayerTracker compact />
           </section>
         </div>
+        */}
         <div className="dash-col">
+          {/*
           <section aria-labelledby="today-todos">
             <h2 id="today-todos" className="section-title">
               Due today
@@ -35,13 +40,25 @@ export default function TodayPage() {
               <TodoList compact />
             </div>
           </section>
+          */}
           <section aria-labelledby="today-next" className="dash-col">
             <h2 id="today-next" className="section-title">
-              Classes, training and study
+              Classes and study
             </h2>
             <TeachingToday />
-            <FitnessToday />
+            {/* <FitnessToday /> */}
             <StudyToday />
+          </section>
+        </div>
+        <div className="dash-col">
+          <section aria-labelledby="today-daily">
+            <h2 id="today-daily" className="section-title">
+              Prayers, to-dos and fitness
+            </h2>
+            <a className="tile link-tile dash-card" href={DAILY_APP_URL} target="_blank" rel="noopener noreferrer">
+              <strong>Open the Daily app</strong>
+              <span className="muted">Prayers, to-dos, workouts, food and sleep now live there.</span>
+            </a>
           </section>
         </div>
       </div>

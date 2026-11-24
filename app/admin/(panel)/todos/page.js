@@ -1,3 +1,12 @@
+import { redirect } from "next/navigation";
+import { DAILY_APP_URL } from "@/lib/daily-app";
+
+// Moved to the Daily app. The old page is kept below, commented out.
+export default function MovedToDaily() {
+  redirect(`${DAILY_APP_URL}/todos`);
+}
+
+/*
 import TodoList from "@/components/admin/TodoList";
 
 export const metadata = { title: "To-do · Daily" };
@@ -13,3 +22,4 @@ export default function TodosPage() {
     </>
   );
 }
+*/

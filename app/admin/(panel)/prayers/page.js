@@ -1,3 +1,12 @@
+import { redirect } from "next/navigation";
+import { DAILY_APP_URL } from "@/lib/daily-app";
+
+// Moved to the Daily app. The old page is kept below, commented out.
+export default function MovedToDaily() {
+  redirect(`${DAILY_APP_URL}/prayers`);
+}
+
+/*
 import PrayerTracker from "@/components/admin/PrayerTracker";
 
 export const metadata = { title: "Prayers · Daily" };
@@ -11,3 +20,4 @@ export default function PrayersPage() {
     </>
   );
 }
+*/

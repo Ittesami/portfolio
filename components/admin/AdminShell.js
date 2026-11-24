@@ -9,9 +9,10 @@ import { MESSAGES_CHANGED } from "./MessageList";
 
 const NAV = [
   { href: "/admin", label: "Today", icon: "home" },
-  { href: "/admin/todos", label: "To-do", icon: "list" },
-  { href: "/admin/prayers", label: "Prayers", icon: "moon" },
-  { href: "/admin/fitness", label: "Fitness", icon: "dumbbell" },
+  // To-do, Prayers and Fitness moved to the Daily app (daily-ten-chi.vercel.app); their pages redirect there.
+  // { href: "/admin/todos", label: "To-do", icon: "list" },
+  // { href: "/admin/prayers", label: "Prayers", icon: "moon" },
+  // { href: "/admin/fitness", label: "Fitness", icon: "dumbbell" },
   { href: "/admin/study", label: "Study", icon: "book" },
   { href: "/admin/teaching", label: "Teaching", icon: "cap" },
   { href: "/admin/travel", label: "Travel", icon: "globe" },
@@ -19,7 +20,7 @@ const NAV = [
   { href: "/admin/messages", label: "Messages", icon: "mail" },
 ];
 // Phones get a bottom tab bar with the sections used most; the rest live under "More".
-const TABS = ["/admin", "/admin/todos", "/admin/fitness", "/admin/study"];
+const TABS = ["/admin", "/admin/study", "/admin/teaching", "/admin/travel"];
 
 const isCurrent = (path, href) => path === href || (href !== "/admin" && path.startsWith(`${href}/`));
 
