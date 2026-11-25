@@ -67,7 +67,16 @@ export default async function Home() {
                 {p.name}
                 <span className="dot">.</span>
               </h1>
-              <p className="eyebrow">{p.role}</p>
+              <p className="eyebrow">
+              {String(p.role)
+                .split(" · ")
+                .map((r, i) => (
+                  <span key={r}>
+                    {i > 0 && " · "}
+                    <span className="nowrap">{r}</span>
+                  </span>
+                ))}
+            </p>
             </div>
           </div>
           <div className="intro-text">

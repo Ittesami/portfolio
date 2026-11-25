@@ -861,3 +861,9 @@ a.study-item-title:hover{color:var(--accent)}
   .lesson-nav{grid-template-columns:1fr}
   .lesson-nav-link.next{text-align:left;align-items:flex-start}
 }
+
+/* UX pass: no text under 12px for labels, comfortable tap targets for text links, roles that don't split */
+.kind,.link-note{font-size:12px}
+.see-all{min-height:44px}
+footer a{min-height:44px;display:inline-flex;align-items:center}
+.nowrap{white-space:nowrap}
