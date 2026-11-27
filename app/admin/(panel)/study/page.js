@@ -1,3 +1,12 @@
+import { redirect } from "next/navigation";
+import { DAILY_APP_URL } from "@/lib/daily-app";
+
+// Moved to the Daily app. The old page is kept below, commented out.
+export default async function MovedToDaily() {
+  redirect(`${DAILY_APP_URL}/study`);
+}
+
+/*
 import StudyOverview from "@/components/admin/study/StudyOverview";
 
 export const metadata = { title: "Study · Daily" };
@@ -11,3 +20,4 @@ export default function StudyPage() {
     </>
   );
 }
+*/
